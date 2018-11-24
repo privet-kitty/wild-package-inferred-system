@@ -6,8 +6,8 @@
 (in-package :wild-package-inferred-system)
 
 (defclass wild-package-inferred-system (package-inferred-system)
-  ()
-  (:documentation "Is almost same as ASDF:PACKAGE-INFERRED-SYSTEM though it can interpret star `*' and globstar `**' in package names."))
+  ((reduce-wild :initform nil))
+  (:documentation "Is almost the same as ASDF:PACKAGE-INFERRED-SYSTEM, except it can interpret star `*' and globstar `**' in package names."))
 
 ;; Is a given form recognizable as a defpackage form?
 (defun defpackage-form-p (form)
@@ -94,7 +94,7 @@ ASDF-OUTPUT-TRANSLATIONS (in the default configuration)."
   ((path :initarg :pathname :reader error-pathname)
    (base :initarg :base-pathname :reader error-base-pathname))
   (:report (lambda (c s)
-             (format s "Couldn't derive the package name of the source file ~S w.r.t. the primary system directory ~S"
+             (format s "Couldn't derive the system name of the source file ~S w.r.t. the primary system directory ~S"
                      (error-pathname c)
                      (error-base-pathname c)))))
 
@@ -162,3 +162,16 @@ and .script.lisp, even if they match a given wild card."
                                    :components ((cl-source-file "lisp" :pathname ,translated-path))))))))))))))))
 
 (pushnew 'sysdef-wild-package-inferred-system-search *system-definition-search-functions*)
+
+(defun reduce-all-wild-packages (primary-name &optional (delete t))
+  "Reducts all wild packages beginning with PRIMARY-NAME"
+  (unless (primary-system-p primary-name)
+    (error "~S must be primary name." primary-name))
+  (let ((primary-name (standard-case-symbol-name primary-name)))
+    (dolist (p (list-all-packages))
+      (let ((name (package-name p)))
+        (when (and (equal primary-name (primary-system-name name))
+                   (wild-pathname-p (parse-unix-namestring name :interpret-wild t)))
+          (reduce-package p)
+          (when delete
+            (delete-package* p)))))))

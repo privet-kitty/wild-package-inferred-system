@@ -28,6 +28,10 @@ Each source file in the system `foo-wild` will begin with `defpackage` or `uiop:
 ```
 
 `*` matches one directory or (if in the end) all .lisp files in the directory. `**` matches zero or more subdirectories. In the above example, the package `:foo-wild/qux/*` corresponds to the UNIX path `foo-wild/qux/*.lisp` and `:foo-wild/bar/**/*` to `foo-wild/bar/**/*.lisp`. (The latter path matches all the recursively reachable .lisp files under `foo-wild/bar`.) 
+<!--
+You _can_ use any other combinations of wildcards, e.g. `foo/*/bar` (matching foo/sbcl/bar.lisp, foo/ccl/bar.lisp, ...) or `foo/**/interface/*`. However, we recommend that you think about if you really need such a designation.
+-->
+
 ## Installation
 The only dependent system is [md5](https://github.com/pmai/md5), which can be installed with quicklisp.
 

@@ -101,3 +101,14 @@ globstar."
             (sig-idx (+ idx idx)))
         (setf (aref signature sig-idx) (aref dict tens-place))
         (setf (aref signature (1+ sig-idx)) (aref dict units))))))
+
+(defun reduce-package (package-designator)
+  "Reduces the package from the graph of user-usee relationship: for
+example, (A B) using C using (D E F) is transformed to A using (D E F)
+and B using (D E F) if package C is reduced. "
+  (let ((using-list (package-used-by-list package-designator))
+        (used-list (package-use-list package-designator)))
+    (dolist (using using-list)
+      (unuse-package package-designator using)
+      (dolist (used used-list)
+        (use-package used using)))))
