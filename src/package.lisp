@@ -3,7 +3,7 @@
   (:use :cl :md5 :uiop :asdf/upgrade :asdf/session
         :asdf/component :asdf/system :asdf/system-registry :asdf/lisp-action
         :asdf/parse-defsystem :asdf/package-inferred-system
-        :asdf/output-translations)
+        :asdf/output-translations :asdf/session)
   (:shadow #:split-unix-namestring-directory-components
            #:parse-unix-namestring
            #:split-name-type

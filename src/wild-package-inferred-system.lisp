@@ -32,22 +32,6 @@
   (with-input-file (f file)
     (stream-defpackage-form f)))
 
-(defun package-dependencies (defpackage-form)
-  "Return a list of packages depended on by the package
-defined in DEFPACKAGE-FORM.  A package is depended upon if
-the DEFPACKAGE-FORM uses it or imports a symbol from it."
-  (assert (defpackage-form-p defpackage-form))
-  (remove-duplicates
-   (while-collecting (dep)
-     (loop* :for (option . arguments) :in (cddr defpackage-form) :do
-            (ecase option
-              ((:use :mix :reexport :use-reexport :mix-reexport)
-               (dolist (p arguments) (dep (string p))))
-              ((:import-from :shadowing-import-from)
-               (dep (string (first arguments))))
-              ((:nicknames :documentation :shadow :export :intern :unintern :recycle)))))
-   :from-end t :test 'equal))
-
 (defun package-designator-name (package)
   "Normalize a package designator to a string"
   (etypecase package
@@ -55,30 +39,12 @@ the DEFPACKAGE-FORM uses it or imports a symbol from it."
     (string package)
     (symbol (string package))))
 
-(defun register-system-packages (system packages)
-  "Register SYSTEM as providing PACKAGES."
-  (let ((name (or (eq system t) (coerce-name system))))
-    (dolist (p (ensure-list packages))
-      (setf (gethash (package-designator-name p) *package-inferred-systems*) name))))
-
 (defun package-name-system (package-name)
   "Return the name of the SYSTEM providing PACKAGE-NAME, if such exists,
 otherwise return a default system name computed from PACKAGE-NAME."
   (check-type package-name string)
   (or (gethash package-name *package-inferred-systems*)
       (string-downcase package-name)))
-
-;; Given a file in package-inferred-system style, find its dependencies
-(defun package-inferred-system-file-dependencies (file &optional system)
-  (if-let (defpackage-form (file-defpackage-form file))
-    (remove t (mapcar 'package-name-system (package-dependencies defpackage-form)))
-    (error 'package-inferred-system-missing-package-error :system system :pathname file)))
-
-(defun package-inferred-system-files-dependencies (files &optional system)
-  (delete-duplicates
-   (loop for file in files
-         append (package-inferred-system-file-dependencies file system))
-   :test #'equal))
 
 ;; Given package-inferred-system object, check whether its specification matches
 ;; the provided parameters
@@ -110,6 +76,7 @@ otherwise return a default system name computed from PACKAGE-NAME."
                     (strcat x "_sl_" y))
                   (nth-value 1 (split-unix-namestring-directory-components system :interpret-wild t))
                   :key #'string)
+          "_"
           (calc-md5-signature system 4)
           ".lisp"))
 
@@ -132,25 +99,30 @@ ASDF-OUTPUT-TRANSLATIONS (in the default configuration)."
                                (not (equal primary (primary-system-name dependent-system))))
                              dependencies))))))
 
-(defun relative-pathname (pathname base &key (test #'null))
-  "Computes the relative pathname from BASE."
-  (loop for rest = (pathname-directory pathname) then (cdr rest)
-        for base-rest = (pathname-directory base) then (cdr base-rest)
-        when (funcall test base-rest)
-          do (return (make-pathname :host (pathname-host pathname)
-                                    :device (pathname-device pathname)
-                                    :name (pathname-name pathname)
-                                    :type (pathname-type pathname)
-                                    :version (pathname-version pathname)
-                                    :directory (cons :relative rest)))
-        unless (equal (car rest) (car base-rest))
-          do (error "Huh?")))
+(define-condition wild-package-inferred-system-illegal-file-pathname (system-definition-error)
+  ((path :initarg :pathname :reader error-pathname)
+   (base :initarg :base-pathname :reader error-base-pathname))
+  (:report (lambda (c s)
+             (format s "Couldn't derive the package name of the source file ~S w.r.t. the primary system directory ~S"
+                     (error-pathname c)
+                     (error-base-pathname c)))))
 
 (defun pathname-to-package-name (pathname toplevel-pathname)
-  (let ((relative (relative-pathname pathname toplevel-pathname :test (lambda (x) (null (cdr x))))))
-    (unix-namestring (make-pathname :directory (pathname-directory relative)
-                                    :type nil
-                                    :name (pathname-name relative)))))
+  "Derives the package name of CL-SOURCE-FILE at PATHNAME
+w.r.t. primary system at TOPLEVEL-PATHNAME."
+  (let ((relative
+          (loop for rest = (pathname-directory pathname) then (cdr rest)
+                for base-rest = (pathname-directory toplevel-pathname) then (cdr base-rest)
+                when (null (cdr base-rest)) ; Returns at the last component but one
+                  do (return (make-pathname :name (pathname-name pathname)
+                                            :directory (cons :relative rest)))
+                unless (equal (car rest) (car base-rest))
+                  do (error (make-condition 'wild-package-inferred-system-illegal-file-pathname
+                                            :pathname pathname
+                                            :base-pathname toplevel-pathname)))))
+    (unix-namestring (make-pathname :name (pathname-name relative)
+                                    :directory (pathname-directory relative)
+                                    :type nil))))
 
 ;; sysdef search function to push into *system-definition-search-functions*
 (defun sysdef-wild-package-inferred-system-search (system)
