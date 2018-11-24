@@ -5,17 +5,9 @@
 
 (in-package :wild-package-inferred-system)
 
-(defun initial-package-inferred-systems-table ()
-  ;; Mark all existing packages are preloaded.
-  (let ((h (make-hash-table :test 'equal)))
-    (dolist (p (list-all-packages))
-      (dolist (n (package-names p))
-        (setf (gethash n h) t)))
-    h))
-
 (defclass wild-package-inferred-system (package-inferred-system)
   ()
-  (:documentation "Is almost same as ASDF:PACKAGE-INFERRED-SYSTEM though this class can interpret star `*' and globstar `**' in package names."))
+  (:documentation "Is almost same as ASDF:PACKAGE-INFERRED-SYSTEM though it can interpret star `*' and globstar `**' in package names."))
 
 ;; Is a given form recognizable as a defpackage form?
 (defun defpackage-form-p (form)
@@ -86,7 +78,6 @@ ASDF-OUTPUT-TRANSLATIONS (in the default configuration)."
   (merge-pathnames* (strcat "__WILD_SYSTEM__/")
                     (apply-output-translations toplevel-system-directory)))
 
-
 (defun generate-reexporting-form (system dependencies)
   "Generates the UIOP:DEFINE-PACKAGE form for reexporting."
   (let ((primary (primary-system-name system)))
@@ -107,22 +98,25 @@ ASDF-OUTPUT-TRANSLATIONS (in the default configuration)."
                      (error-pathname c)
                      (error-base-pathname c)))))
 
-(defun pathname-to-package-name (pathname toplevel-pathname)
+(defun pathname-to-package-name (pathname primary-system)
   "Derives the package name of CL-SOURCE-FILE at PATHNAME
-w.r.t. primary system at TOPLEVEL-PATHNAME."
-  (let ((relative
-          (loop for rest = (pathname-directory pathname) then (cdr rest)
-                for base-rest = (pathname-directory toplevel-pathname) then (cdr base-rest)
-                when (null (cdr base-rest)) ; Returns at the last component but one
-                  do (return (make-pathname :name (pathname-name pathname)
-                                            :directory (cons :relative rest)))
-                unless (equal (car rest) (car base-rest))
-                  do (error (make-condition 'wild-package-inferred-system-illegal-file-pathname
-                                            :pathname pathname
-                                            :base-pathname toplevel-pathname)))))
-    (unix-namestring (make-pathname :name (pathname-name relative)
-                                    :directory (pathname-directory relative)
-                                    :type nil))))
+w.r.t. PRIMARY-SYSTEM."
+  (let* ((primary-pathname (component-pathname primary-system))
+         (relative
+           (loop for rest = (pathname-directory pathname) then (cdr rest)
+                 for base-rest = (pathname-directory primary-pathname) then (cdr base-rest)
+                 when (null base-rest)
+                   do (return (make-pathname :name (pathname-name pathname)
+                                             :directory (cons :relative rest)))
+                 unless (equal (car rest) (car base-rest))
+                   do (error (make-condition 'wild-package-inferred-system-illegal-file-pathname
+                                             :pathname pathname
+                                             :base-pathname primary-pathname)))))
+    (strcat (component-name primary-system)
+            "/"
+            (unix-namestring (make-pathname :name (pathname-name relative)
+                                            :directory (pathname-directory relative)
+                                            :type nil)))))
 
 ;; sysdef search function to push into *system-definition-search-functions*
 (defun sysdef-wild-package-inferred-system-search (system)
@@ -138,7 +132,7 @@ w.r.t. primary system at TOPLEVEL-PATHNAME."
                 (let ((files (directory* path)))
                   (unless files
                     (warn (make-condition 'empty-wild-system :name system :pathname path)))
-                  (let* ((dependencies (mapcar (lambda (path) (pathname-to-package-name path dir))
+                  (let* ((dependencies (mapcar (lambda (path) (pathname-to-package-name path top))
                                                files))
                          (previous (registered-system system))
                          (around-compile (around-compile-hook top))
