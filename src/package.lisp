@@ -8,4 +8,5 @@
            #:parse-unix-namestring
            #:split-name-type
            #:subpathname)
-  (:export #:wild-package-inferred-system))
+  (:export #:wild-package-inferred-system
+           #:empty-wild-system))
