@@ -92,7 +92,7 @@ otherwise return a default system name computed from PACKAGE-NAME."
          (and (length=n-p children 1)
               (let ((child (first children)))
                 (and (eq (type-of child) 'cl-source-file)
-                     (equal (component-name child) "wild")
+                     (equal (component-name child) "lisp")
                      (and (slot-boundp child 'relative-pathname)
                           (equal (slot-value child 'relative-pathname) subpath))))))))
 
@@ -107,25 +107,33 @@ otherwise return a default system name computed from PACKAGE-NAME."
 (defun generate-wild-package-filename (system)
   "Generates the filename for a given wild system."
   (strcat (reduce (lambda (x y)
-                    (strcat x "_SLASH_" y))
+                    (strcat x "_sl_" y))
                   (nth-value 1 (split-unix-namestring-directory-components system :interpret-wild t))
                   :key #'string)
+          (calc-md5-signature system 4)
           ".lisp"))
 
 (defun calc-wild-package-directory-pathname (toplevel-system-directory)
+  ".lisp files for wild system are put under ASDF:*USER-CACHE* by
+ASDF-OUTPUT-TRANSLATIONS (in the default configuration)."
   (merge-pathnames* (strcat "__WILD_SYSTEM__/")
                     (apply-output-translations toplevel-system-directory)))
 
 
 (defun generate-reexporting-form (system dependencies)
   "Generates the UIOP:DEFINE-PACKAGE form for reexporting."
-  `(define-package ,(intern (standard-case-symbol-name system) :keyword)
-       (:use :cl)
-     (:use-reexport ,@(mapcar (lambda (dependent-system)
-                                (intern (standard-case-symbol-name dependent-system) :keyword))
-                              (remove-if #'primary-system-p dependencies)))))
+  (let ((primary (primary-system-name system)))
+    `(define-package ,(intern (standard-case-symbol-name system) :keyword)
+         (:use :cl)
+       (:use-reexport
+        ,@(mapcar (lambda (dependent-system)
+                    (intern (standard-case-symbol-name dependent-system) :keyword))
+                  (remove-if (lambda (dependent-system)
+                               (not (equal primary (primary-system-name dependent-system))))
+                             dependencies))))))
 
 (defun relative-pathname (pathname base &key (test #'null))
+  "Computes the relative pathname from BASE."
   (loop for rest = (pathname-directory pathname) then (cdr rest)
         for base-rest = (pathname-directory base) then (cdr base-rest)
         when (funcall test base-rest)
@@ -153,6 +161,7 @@ otherwise return a default system name computed from PACKAGE-NAME."
           (if-let (dir (component-pathname top))
             (let* ((sub (subseq system (1+ (length primary))))
                    (path (subpathname dir sub :type "lisp")))
+              ;; Leaves it to package-inferred-system, if no wildcard is used.
               (when (wild-pathname-p path)
                 (let ((files (directory* path)))
                   (unless files
@@ -168,9 +177,7 @@ otherwise return a default system name computed from PACKAGE-NAME."
                         previous
                         (progn
                           (ensure-directories-exist translated-dir)
-                          (with-output-file (out translated-path
-                                                 :if-exists :supersede
-                                                 :if-does-not-exist :create)
+                          (with-output-file (out translated-path :if-exists :supersede)
                             (writeln (generate-reexporting-form system dependencies)
                                      :stream out))
                           (eval `(defsystem ,system
@@ -179,6 +186,6 @@ otherwise return a default system name computed from PACKAGE-NAME."
                                    :pathname ,dir
                                    :depends-on ,dependencies
                                    :around-compile ,around-compile
-                                   :components ((cl-source-file "wild" :pathname ,translated-path))))))))))))))))
+                                   :components ((cl-source-file "lisp" :pathname ,translated-path))))))))))))))))
 
 (pushnew 'sysdef-wild-package-inferred-system-search *system-definition-search-functions*)

@@ -1,9 +1,13 @@
+;;;;
+;;;; Internally used utilities
+;;;;
+
 (in-package :wild-package-inferred-system)
 
 (defun split-unix-namestring-directory-components
       (unix-namestring &key ensure-directory dot-dot interpret-wild)
   "Is almost same as UIOP:SPLIT-UNIX-NAMESTRING-DIRECTORY-COMPONENTS
-but can interpret star `*' and globstar `**'."
+but interprets star `*' and globstar `**'."
     (check-type unix-namestring string)
     (check-type dot-dot (member nil :back :up))
     (if (and (not (find #\/ unix-namestring)) (not ensure-directory)
@@ -85,3 +89,15 @@ globstar."
   (or (and (pathnamep subpath) (absolute-pathname-p subpath))
       (merge-pathnames* (parse-unix-namestring subpath :type type :want-relative t :interpret-wild t)
                         (pathname-directory-pathname pathname))))
+
+
+(defun calc-md5-signature (string &optional (byte 16))
+  (let ((signature (make-array (+ byte byte) :element-type 'base-char))
+        (md5sum (md5:md5sum-string string))
+        (dict #(#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\a #\b #\c #\d #\e #\f)))
+    (dotimes (idx byte signature)
+      (let ((units (logand (aref md5sum idx) #x0F))
+            (tens-place (ash (logand (aref md5sum idx) #xF0) -4))
+            (sig-idx (+ idx idx)))
+        (setf (aref signature sig-idx) (aref dict tens-place))
+        (setf (aref signature (1+ sig-idx)) (aref dict units))))))

@@ -4,7 +4,7 @@
   :version "0.0.1"
   :author "Hugo I."
   :license "MIT license"
-  :depends-on ()
+  :depends-on ("md5")
   :components ((:module "src"
                 :components
                 ((:file "package")
