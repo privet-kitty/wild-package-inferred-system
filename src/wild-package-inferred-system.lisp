@@ -118,6 +118,13 @@ w.r.t. PRIMARY-SYSTEM."
                                             :directory (pathname-directory relative)
                                             :type nil)))))
 
+(defun excluded-source-pathname-p (pathname)
+  "wild-package-inferred-system ignores the file types .nosystem.lisp
+and .script.lisp, even if they match a given wild card."
+  (let ((second-type (nth-value 1 (split-name-type (pathname-name pathname)))))
+    (or (equal second-type "script")
+        (equal second-type "nosystem"))))
+
 ;; sysdef search function to push into *system-definition-search-functions*
 (defun sysdef-wild-package-inferred-system-search (system)
   (let ((primary (primary-system-name system)))
@@ -129,7 +136,7 @@ w.r.t. PRIMARY-SYSTEM."
                    (path (subpathname dir sub :type "lisp")))
               ;; Leaves it to package-inferred-system, if no wildcard is used.
               (when (wild-pathname-p path)
-                (let ((files (directory* path)))
+                (let ((files (delete-if #'excluded-source-pathname-p (directory* path))))
                   (unless files
                     (warn (make-condition 'empty-wild-system :name system :pathname path)))
                   (let* ((dependencies (mapcar (lambda (path) (pathname-to-package-name path top))
