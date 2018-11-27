@@ -6,8 +6,23 @@
 (in-package :wild-package-inferred-system)
 
 (defclass wild-package-inferred-system (package-inferred-system)
-  ((reduce-wild :initform nil))
-  (:documentation "Is almost the same as ASDF:PACKAGE-INFERRED-SYSTEM, except it can interpret star `*' and globstar `**' in package names."))
+  ((reduce-wild :initform nil :initarg :reduce-wild :reader reduce-wild-p))
+  (:documentation "Is almost the same as ASDF:PACKAGE-INFERRED-SYSTEM, except it can interpret star `*' and globstar `**' in package names.
+
+If REDUCE-WILD is true, all wild packages are deleted after LOAD-OP or LOAD-SOURCE-OP. [experimental]"))
+
+(defmethod operate :after ((operation basic-load-op) (component wild-package-inferred-system)
+                    &rest keys)
+  (declare (ignore keys))
+  (when (reduce-wild-p component)
+    (reduce-all-wild-packages (component-name component))))
+
+(defparameter *system-cache-per-oos* nil)
+
+(defmethod operate :around (operation (component wild-package-inferred-system) &rest keys)
+  (declare (ignorable keys))
+  (let ((*system-cache-per-oos* (make-hash-table :test #'equal)))
+    (call-next-method)))
 
 ;; Is a given form recognizable as a defpackage form?
 (defun defpackage-form-p (form)
@@ -127,39 +142,44 @@ and .script.lisp, even if they match a given wild card."
 
 ;; sysdef search function to push into *system-definition-search-functions*
 (defun sysdef-wild-package-inferred-system-search (system)
-  (let ((primary (primary-system-name system)))
-    (unless (equal primary system)
-      (let ((top (find-system primary nil)))
-        (when (typep top 'wild-package-inferred-system)
-          (if-let (dir (component-pathname top))
-            (let* ((sub (subseq system (1+ (length primary))))
-                   (path (subpathname dir sub :type "lisp")))
-              ;; Leaves it to package-inferred-system, if no wildcard is used.
-              (when (wild-pathname-p path)
-                (let ((files (delete-if #'excluded-source-pathname-p (directory* path))))
-                  (unless files
-                    (warn (make-condition 'empty-wild-system :name system :pathname path)))
-                  (let* ((dependencies (mapcar (lambda (path) (pathname-to-package-name path top))
-                                               files))
-                         (previous (registered-system system))
-                         (around-compile (around-compile-hook top))
-                         (translated-dir (calc-wild-package-directory-pathname dir))
-                         (dest-filename (generate-wild-package-filename system))
-                         (translated-path (merge-pathnames* dest-filename translated-dir)))
-                    (if (same-wild-package-inferred-system-p previous system dir translated-path around-compile dependencies)
-                        previous
-                        (progn
-                          (ensure-directories-exist translated-dir)
-                          (with-output-file (out translated-path :if-exists :supersede)
-                            (writeln (generate-reexporting-form system dependencies)
-                                     :stream out))
-                          (eval `(defsystem ,system
-                                   :class wild-package-inferred-system
-                                   :source-file ,(system-source-file top)
-                                   :pathname ,dir
-                                   :depends-on ,dependencies
-                                   :around-compile ,around-compile
-                                   :components ((cl-source-file "lisp" :pathname ,translated-path))))))))))))))))
+  (or (and *system-cache-per-oos*
+           (gethash system *system-cache-per-oos*))
+      (let ((primary (primary-system-name system)))
+        (unless (equal primary system)
+          (let ((top (find-system primary nil)))
+            (when (typep top 'wild-package-inferred-system)
+              (if-let (dir (component-pathname top))
+                (let* ((sub (subseq system (1+ (length primary))))
+                       (path (subpathname dir sub :type "lisp")))
+                  ;; Leaves it to package-inferred-system, if no wildcard is used.
+                  (when (wild-pathname-p path)
+                    (let ((files (delete-if #'excluded-source-pathname-p (directory* path))))
+                      (unless files
+                        (warn (make-condition 'empty-wild-system :name system :pathname path)))
+                      (let* ((dependencies (mapcar (lambda (path) (pathname-to-package-name path top))
+                                                   files))
+                             (previous (registered-system system))
+                             (around-compile (around-compile-hook top))
+                             (translated-dir (calc-wild-package-directory-pathname dir))
+                             (dest-filename (generate-wild-package-filename system))
+                             (translated-path (merge-pathnames* dest-filename translated-dir)))
+                        (if (same-wild-package-inferred-system-p previous system dir translated-path around-compile dependencies)
+                            (when *system-cache-per-oos*
+                              (setf (gethash system *system-cache-per-oos*) previous))
+                            (progn
+                              (ensure-directories-exist translated-dir)
+                              (with-output-file (out translated-path :if-exists :supersede)
+                                (writeln (generate-reexporting-form system dependencies)
+                                         :stream out))
+                              (when *system-cache-per-oos*
+                                (setf (gethash system *system-cache-per-oos*)
+                                      (eval `(defsystem ,system
+                                               :class wild-package-inferred-system
+                                               :source-file ,(system-source-file top)
+                                               :pathname ,dir
+                                               :depends-on ,dependencies
+                                               :around-compile ,around-compile
+                                               :components ((cl-source-file "lisp" :pathname ,translated-path)))))))))))))))))))
 
 (pushnew 'sysdef-wild-package-inferred-system-search *system-definition-search-functions*)
 
