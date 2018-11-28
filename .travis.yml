@@ -22,7 +22,8 @@ install:
   - git clone --depth=1 git://github.com/pmai/md5.git ~/lisp/md5
 
 script:
-  - ros -s fiveam -e '(ql:quickload :wild-package-inferred-system/test)
+  - ros -s fiveam -e '(format t "~&Tested on ASDF version ~A" (asdf:asdf-version))
+                      (ql:quickload :wild-package-inferred-system/test)
                       (or (fiveam:run! :wild-package-inferred-system-suite)
                           (uiop:quit 1))'
 
