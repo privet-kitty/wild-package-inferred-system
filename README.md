@@ -1,6 +1,6 @@
 # wild-package-inferred-system
 
-**This library is experimental and still in a pre-alpha stage. Not tested. Not optimized.**
+**This library is experimental and still in a pre-alpha stage.**
 
 `wild-package-inferred-system` is an extension of ASDF `package-inferred-system` that interprets star `*` and globstar `**` in package names.
 

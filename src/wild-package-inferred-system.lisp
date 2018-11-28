@@ -81,7 +81,7 @@ otherwise return a default system name computed from PACKAGE-NAME."
   "Generates the filename for a given wild system."
   (strcat (reduce (lambda (x y)
                     (strcat x "_sl_" y))
-                  (nth-value 1 (split-unix-namestring-directory-components system :interpret-wild t))
+                  (nth-value 1 (split-unix-namestring-directory-components** system :interpret-wild t))
                   :key #'string)
           "_"
           (calc-md5-signature system 4)
@@ -97,7 +97,7 @@ ASDF-OUTPUT-TRANSLATIONS (in the default configuration)."
   "Generates the UIOP:DEFINE-PACKAGE form for reexporting."
   (let ((primary (primary-system-name system)))
     `(define-package ,(intern (standard-case-symbol-name system) :keyword)
-         (:use :cl)
+         (:use)
        (:use-reexport
         ,@(mapcar (lambda (dependent-system)
                     (intern (standard-case-symbol-name dependent-system) :keyword))
@@ -150,7 +150,7 @@ and .script.lisp, even if they match a given wild card."
             (when (typep top 'wild-package-inferred-system)
               (if-let (dir (component-pathname top))
                 (let* ((sub (subseq system (1+ (length primary))))
-                       (path (subpathname dir sub :type "lisp")))
+                       (path (subpathname** dir sub :type "lisp")))
                   ;; Leaves it to package-inferred-system, if no wildcard is used.
                   (when (wild-pathname-p path)
                     (let ((files (delete-if #'excluded-source-pathname-p (directory* path))))
@@ -191,7 +191,7 @@ and .script.lisp, even if they match a given wild card."
     (dolist (p (list-all-packages))
       (let ((name (package-name p)))
         (when (and (equal primary-name (primary-system-name name))
-                   (wild-pathname-p (parse-unix-namestring name :interpret-wild t)))
+                   (wild-pathname-p (parse-unix-namestring** name :interpret-wild t)))
           (reduce-package p)
           (when delete
             (delete-package* p)))))))

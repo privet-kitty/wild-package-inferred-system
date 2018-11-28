@@ -4,7 +4,7 @@
 
 (in-package :wild-package-inferred-system)
 
-(defun split-unix-namestring-directory-components
+(defun split-unix-namestring-directory-components**
       (unix-namestring &key ensure-directory dot-dot interpret-wild)
   "Is almost same as UIOP:SPLIT-UNIX-NAMESTRING-DIRECTORY-COMPONENTS
 but interprets star `*' and globstar `**'."
@@ -36,7 +36,7 @@ but interprets star `*' and globstar `**'."
                (values relative (butlast components) last-comp nil)))))))
 
 
-(defun split-name-type (filename &key interpret-wild)
+(defun split-name-type** (filename &key interpret-wild)
   "Is almost same as UIOP:SPLIT-NAME-TYPE but can interpret star `*'."
   (check-type filename string)
   (assert (plusp (length filename)))
@@ -51,7 +51,7 @@ but interprets star `*' and globstar `**'."
         (values filename *unspecific-pathname-type*)
         (values name type))))
 
-(defun parse-unix-namestring (name &rest keys &key type defaults dot-dot ensure-directory
+(defun parse-unix-namestring** (name &rest keys &key type defaults dot-dot ensure-directory
                                                 interpret-wild &allow-other-keys)
   "Is almost same as UIOP:PARSE-UNIX-NAMESTRING but can interpret
 star `*' and globstar `**'."
@@ -65,7 +65,7 @@ star `*' and globstar `**'."
        (setf name (string-downcase name)))
       (string))
     (multiple-value-bind (relative path filename file-only)
-        (split-unix-namestring-directory-components
+        (split-unix-namestring-directory-components**
          name :dot-dot dot-dot :ensure-directory (eq type :directory)
          :interpret-wild interpret-wild)
       (multiple-value-bind (name type)
@@ -73,9 +73,9 @@ star `*' and globstar `**'."
             ((or (eq type :directory) (null filename))
              (values nil nil))
             (type
-             (values (split-name-type filename :interpret-wild interpret-wild) type))
+             (values (split-name-type** filename :interpret-wild interpret-wild) type))
             (t
-             (split-name-type filename :interpret-wild interpret-wild)))
+             (split-name-type** filename :interpret-wild interpret-wild)))
         (apply 'ensure-pathname
                (make-pathname
                 :directory (unless file-only (cons relative path))
@@ -83,11 +83,11 @@ star `*' and globstar `**'."
                 :defaults (or #-mcl defaults *nil-pathname*))
                (remove-plist-keys '(:type :dot-dot :defaults :interpret-wild) keys))))))
 
-(defun subpathname (pathname subpath &key type)
+(defun subpathname** (pathname subpath &key type)
   "Is almost same as UIOP:SUBPATHNAME but interprets star `*' and `**'
 globstar."
   (or (and (pathnamep subpath) (absolute-pathname-p subpath))
-      (merge-pathnames* (parse-unix-namestring subpath :type type :want-relative t :interpret-wild t)
+      (merge-pathnames* (parse-unix-namestring** subpath :type type :want-relative t :interpret-wild t)
                         (pathname-directory-pathname pathname))))
 
 
