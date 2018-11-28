@@ -42,6 +42,9 @@ $ git clone https://github.com/privet-kitty/wild-package-inferred-system.git
 
 ## Mechanism
 
+## FAQ
+### How can I let wild-package-inferred-system ignore a specific .lisp file?
+wild-package-inferred-system ignores the files of the type `.nosystem.lisp` and `.script.lisp` even if they match a given wildcard.
 
 ## Copyright
 Copyright (c) 2018 Hugo I.
