@@ -24,7 +24,7 @@ Each source file in the system `foo-wild` will begin with `defpackage` or `uiop:
 (defpackage :foo-wild/baz/hello
   (:use :cl :foo-wild/qux/*)
   (:import-from :foo-wild/bar/**/*)
-  (:export #:say-hello))
+  (:export #:hello-world))
 ```
 
 `*` matches one directory or (if in the end) all .lisp files in the directory. `**` matches zero or more subdirectories. In the above example, the package `:foo-wild/qux/*` corresponds to the UNIX path `foo-wild/qux/*.lisp` and `:foo-wild/bar/**/*` to `foo-wild/bar/**/*.lisp`. (The latter path matches all the recursively reachable .lisp files under `foo-wild/bar`.) 

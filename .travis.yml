@@ -1,0 +1,29 @@
+language: common-lisp
+
+branches:
+  only:
+    - master
+    - develop
+    - /^ci-.*$/
+
+env:
+  global:
+    - PATH=~/.roswell/bin:$PATH
+  matrix:
+    - LISP=sbcl-bin
+    # - LISP=ccl-bin
+    # - LISP=allegro
+    # - LISP=abcl
+    # - LISP=clisp
+    # - LISP=ecl
+
+install:
+  - curl -L https://raw.githubusercontent.com/snmsts/roswell/release/scripts/install-for-ci.sh | sh
+  - git clone --depth=1 git://github.com/pmai/md5.git ~/lisp/md5
+
+script:
+  - ros -s fiveam -e '(ql:quickload :wild-package-inferred-system/test)
+                      (or (fiveam:run! :wild-package-inferred-system-suite)
+                          (uiop:quit 1))'
+
+sudo: required
