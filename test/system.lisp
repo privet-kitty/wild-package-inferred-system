@@ -23,7 +23,7 @@
                    :foo-wild/bar/deep/functions)
                  (package-use-list :foo-wild/bar/**/*)
                  :key #'find-package))
-  (is (equal "Hello, world! 2pi equals 6.283185307179586d0."
+  (is (equal "Hello, world! 2pi equals 6."
              (let ((out (make-string-output-stream))
                    (*standard-input* (make-string-input-stream "t nil")))
                (uiop:symbol-call :foo-wild :hello out)

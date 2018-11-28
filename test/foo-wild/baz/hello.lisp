@@ -7,4 +7,4 @@
 (defun hello (&optional (out *standard-output*))
   (while (read)
     (my-princ "Hello, world! " out)
-    (format out "2pi equals ~A." two-pi)))
+    (format out "2pi equals ~A." (round two-pi))))
