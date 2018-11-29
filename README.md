@@ -33,6 +33,8 @@ You _can_ use any other combinations of wildcards, e.g. `foo/*/bar` (matching fo
 -->
 
 ## Dependencies
+You need **ASDF version 3.3.2.11** or later.
+
 `wild-package-inferred-system` is tested on the (usually latest vesions of the) following implementations:
 - SBCL
 - Clozure CL
@@ -41,7 +43,7 @@ You _can_ use any other combinations of wildcards, e.g. `foo/*/bar` (matching fo
 - CLISP
 - ECL
 
-The only dependent system is [md5](https://github.com/pmai/md5), which can be installed with quicklisp.
+The only dependent library is [md5](https://github.com/pmai/md5), which can be installed with quicklisp.
 
 ## Installation
 ```
