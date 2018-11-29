@@ -1,6 +1,7 @@
 # wild-package-inferred-system
 
 **This library is experimental and still in a pre-alpha stage.**
+[![Build Status](https://api.travis-ci.org/privet-kitty/wild-package-inferred-system.svg?branch=master)](https://travis-ci.org/privet-kitty/wild-package-inferred-system/)
 
 `wild-package-inferred-system` is an extension of ASDF `package-inferred-system` that interprets star `*` and globstar `**` in package names.
 
@@ -32,9 +33,20 @@ Each source file in the system `foo-wild` will begin with `defpackage` or `uiop:
 You _can_ use any other combinations of wildcards, e.g. `foo/*/bar` (matching foo/sbcl/bar.lisp, foo/ccl/bar.lisp, ...) or `foo/**/interface/*`. However, we recommend that you think about if you really need such a designation.
 -->
 
-## Installation
+## Dependencies
+wild-package-inferred-system is tested on the following implementations:
+- SBCL
+- Clozure CL
+- Allegro CL
+- ABCL
+- CLISP
+- ECL
+
+See [Travis CI](https://travis-ci.org/privet-kitty/wild-package-inferred-system/) for version details.
+
 The only dependent system is [md5](https://github.com/pmai/md5), which can be installed with quicklisp.
 
+## Installation
 ```
 $ cd ~/common-lisp/ # , ~/quicklisp/local-projects/ or ~/.roswell/local-projects/ etc.
 $ git clone https://github.com/privet-kitty/wild-package-inferred-system.git
