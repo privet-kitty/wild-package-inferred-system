@@ -31,4 +31,5 @@
              (let ((out (make-string-output-stream))
                    (*standard-input* (make-string-input-stream "t nil")))
                (uiop:symbol-call :foo-wild :hello out)
-               (get-output-stream-string out)))))
+               (get-output-stream-string out))))
+  (finishes (asdf:load-system :foo-wild/**/*)))

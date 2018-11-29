@@ -171,15 +171,16 @@ and .script.lisp, even if they match a given wild card."
                               (with-output-file (out translated-path :if-exists :supersede)
                                 (writeln (generate-reexporting-form system dependencies)
                                          :stream out))
-                              (when *system-cache-per-oos*
-                                (setf (gethash system *system-cache-per-oos*)
-                                      (eval `(defsystem ,system
-                                               :class wild-package-inferred-system
-                                               :source-file ,(system-source-file top)
-                                               :pathname ,dir
-                                               :depends-on ,dependencies
-                                               :around-compile ,around-compile
-                                               :components ((cl-source-file "lisp" :pathname ,translated-path)))))))))))))))))))
+                              (let ((new (eval `(defsystem ,system
+                                                  :class wild-package-inferred-system
+                                                  :source-file ,(system-source-file top)
+                                                  :pathname ,dir
+                                                  :depends-on ,dependencies
+                                                  :around-compile ,around-compile
+                                                  :components ((cl-source-file "lisp" :pathname ,translated-path))))))
+                                (when *system-cache-per-oos*
+                                  (setf (gethash system *system-cache-per-oos*) new))
+                                new))))))))))))))
 
 (pushnew 'sysdef-wild-package-inferred-system-search *system-definition-search-functions*)
 
