@@ -4,7 +4,7 @@
 
 `wild-package-inferred-system` is an extension of ASDF `package-inferred-system` that interprets star `*` and globstar `**` in package names.
 
-If you are not sure about `package-inferred-system`, see [the section](https://common-lisp.net/project/asdf/asdf/The-package_002dinferred_002dsystem-extension.html) about it in the ASDF manual. In short, `wild-package-inferred-system` is aimed at elimininating the need for `foo/bar/all`-type subsystems, which are manually written only for `use-reexport`ing other .lisp files in the (sub)directories.
+If you are not sure about `package-inferred-system`, see [the section](https://common-lisp.net/project/asdf/asdf/The-package_002dinferred_002dsystem-extension.html) about it in the ASDF manual. In short, `wild-package-inferred-system` is aimed at elimininating the need for `foo/bar/all`-type subsystems, which have been manually written only for `use-reexport`ing other .lisp files in the (sub)directories.
 
 ## Usage
 You need to specify the `:defsystem-depends-on` and `class` options to use `wild-package-inferred-system` as follows:
@@ -55,10 +55,10 @@ $ git clone https://github.com/privet-kitty/wild-package-inferred-system.git
 
 ## FAQ
 ### How can I let a specific file be excluded from wildcard?
-`wild-package-inferred-system` ignores the files of the type `.nosystem.lisp` and `.script.lisp` even if they match a given wild package.
+`wild-package-inferred-system` ignores the files whose types are `.nosystem.lisp` or `.script.lisp` even if they match a given wild package.
 
 ### How can I make a wild package in REPL?
-Just call `asdf:load-system`. Evaluating a form like `(asdf:load-system "foo/**/bar/*")` will make the wild package and register the corresponding system simultaneously (if `foo` is `wild-package-inferred-system`, of course).
+Just call `asdf:load-system`. Evaluating a form like `(asdf:load-system "foo/**/bar/*")` will make the wild package and register the corresponding system simultaneously (if the system `foo` is `wild-package-inferred-system`, of course).
 
 ## Copyright
 Copyright (c) 2018 Hugo I.
