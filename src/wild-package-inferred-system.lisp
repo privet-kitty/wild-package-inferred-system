@@ -83,7 +83,7 @@ otherwise return a default system name computed from PACKAGE-NAME."
   "Generates the filename for a given wild system."
   (strcat (reduce (lambda (x y)
                     (strcat x "_sl_" y))
-                  (nth-value 1 (split-unix-namestring-directory-components** system :interpret-wild t))
+                  (nth-value 1 (split-unix-namestring-directory-components** system))
                   :key #'string)
           "_"
           (calc-md5-signature system 4)
@@ -195,7 +195,7 @@ and .script.lisp, even if they match a given wild card."
     (dolist (p (list-all-packages))
       (let ((name (package-name p)))
         (when (and (equal primary-name (primary-system-name name))
-                   (wild-pathname-p (parse-unix-namestring** name :interpret-wild t)))
+                   (wild-pathname-p (parse-unix-namestring** name)))
           (reduce-package p)
           (when delete
             (delete-package* p)))))))
