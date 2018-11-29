@@ -29,7 +29,7 @@ Each source file in the system `foo-wild` will begin with `defpackage` or `uiop:
 
 `*` matches one directory or (if in the end) any .lisp files in the directory. `**` matches zero or more subdirectories. In the above example, the package `:foo-wild/qux/*` corresponds to the UNIX path `foo-wild/qux/*.lisp` and `:foo-wild/bar/**/*` to `foo-wild/bar/**/*.lisp`. (The latter path matches all the recursively reachable .lisp files under `foo-wild/bar/`.) 
 
-Since a wild package is just a standard CL package, you can apply `find-package`, `use-package`, `in-package` etc. to it in the same way as other packages. Likewise you can apply `find-system`, `load-system` or other operations to the corresponding wild system.
+Since a wild package is just a standard CL package, you can apply `find-package`, `use-package`, `in-package` etc. to it if once generated. Likewise you can apply `find-system`, `load-system` or other operations to the corresponding wild system.
 
 <!--
 You _can_ use any other combinations of wildcards, e.g. `foo/*/bar` (matching foo/sbcl/bar.lisp, foo/ccl/bar.lisp, ...) or `foo/**/interface/*`. However, I recommend that you think about if you really need such a designation.
@@ -50,7 +50,7 @@ The only dependent library is [md5](https://github.com/pmai/md5), which can be i
 
 ## Installation
 ```
-$ cd ~/common-lisp/ # , ~/quicklisp/local-projects/ or ~/.roswell/local-projects/ etc.
+$ cd ~/common-lisp/ # , ~/quicklisp/local-projects/, ~/.roswell/local-projects/ etc.
 $ git clone https://github.com/privet-kitty/wild-package-inferred-system.git
 ```
 
