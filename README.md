@@ -2,7 +2,7 @@
 
 [![Build Status](https://api.travis-ci.org/privet-kitty/wild-package-inferred-system.svg?branch=master)](https://travis-ci.org/privet-kitty/wild-package-inferred-system/) **This library is experimental and still in a pre-alpha stage.**
 
-`wild-package-inferred-system` is an extension of ASDF `package-inferred-system` that interprets star `*` and globstar `**` in package names.
+`wild-package-inferred-system` is an extension of ASDF `package-inferred-system` that interprets star `*` and globstar `**` in package (or system) names.
 
 If you are not sure about `package-inferred-system`, see [the section](https://common-lisp.net/project/asdf/asdf/The-package_002dinferred_002dsystem-extension.html) about it in the ASDF manual. In short, `wild-package-inferred-system` is aimed at elimininating the need for `foo/bar/all`-type subsystems, which have been manually written only for `use-reexport`ing other .lisp files in the (sub)directories.
 
@@ -21,13 +21,16 @@ Each source file in the system `foo-wild` will begin with `defpackage` or `uiop:
 
 ```lisp
 ;; foo-wild/baz/hello.lisp
-(defpackage :foo-wild/baz/hello
+(uiop:define-package :foo-wild/baz/hello
   (:use :cl :foo-wild/qux/*)
-  (:import-from :foo-wild/bar/**/*)
+  (:import-from :foo-wild/bar/**/* #:sym1 #:sym2)
   (:export #:hello-world))
 ```
 
-`*` matches one directory or (if in the end) all .lisp files in the directory. `**` matches zero or more subdirectories. In the above example, the package `:foo-wild/qux/*` corresponds to the UNIX path `foo-wild/qux/*.lisp` and `:foo-wild/bar/**/*` to `foo-wild/bar/**/*.lisp`. (The latter path matches all the recursively reachable .lisp files under `foo-wild/bar`.) 
+`*` matches one directory or (if in the end) any .lisp files in the directory. `**` matches zero or more subdirectories. In the above example, the package `:foo-wild/qux/*` corresponds to the UNIX path `foo-wild/qux/*.lisp` and `:foo-wild/bar/**/*` to `foo-wild/bar/**/*.lisp`. (The latter path matches all the recursively reachable .lisp files under `foo-wild/bar/`.) 
+
+Since a wild package is just a standard CL package, you can apply `find-package`, `use-package`, `in-package` etc. to it in the same way as other packages. Likewise you can apply `find-system`, `load-system` or other operations to the corresponding wild system.
+
 <!--
 You _can_ use any other combinations of wildcards, e.g. `foo/*/bar` (matching foo/sbcl/bar.lisp, foo/ccl/bar.lisp, ...) or `foo/**/interface/*`. However, I recommend that you think about if you really need such a designation.
 -->

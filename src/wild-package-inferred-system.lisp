@@ -19,6 +19,8 @@ If REDUCE-WILD is true, all wild packages are deleted after LOAD-OP or LOAD-SOUR
 
 (defparameter *system-cache-per-oos* nil)
 
+;; File system of source repository is assumed to be invariant during
+;; an OPERATE.
 (defmethod operate :around (operation (component wild-package-inferred-system) &rest keys)
   (declare (ignorable keys))
   (let ((*system-cache-per-oos* (make-hash-table :test #'equal)))
@@ -47,7 +49,7 @@ If REDUCE-WILD is true, all wild packages are deleted after LOAD-OP or LOAD-SOUR
     (symbol (string package))))
 
 (defun package-name-system (package-name)
-  "Return the name of the SYSTEM providing PACKAGE-NAME, if such exists,
+  "Returns the name of the SYSTEM providing PACKAGE-NAME, if such exists,
 otherwise return a default system name computed from PACKAGE-NAME."
   (check-type package-name string)
   (or (gethash package-name *package-inferred-systems*)
@@ -88,8 +90,9 @@ otherwise return a default system name computed from PACKAGE-NAME."
           ".lisp"))
 
 (defun calc-wild-package-directory-pathname (toplevel-system-directory)
-  ".lisp files for wild system are put under ASDF:*USER-CACHE* by
-ASDF-OUTPUT-TRANSLATIONS (in the default configuration)."
+  "CL source files for wild systems are put under
+ASDF:*USER-CACHE* (in the default configuration of
+ASDF-OUTPUT-TRANSLATIONS)."
   (merge-pathnames* (strcat "__WILD_SYSTEM__/")
                     (apply-output-translations toplevel-system-directory)))
 
