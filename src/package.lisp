@@ -6,6 +6,7 @@
                 #:primary-system-p
                 #:*defpackage-forms*
                 #:*package-inferred-systems*
-                #:around-compile-hook)
+                #:around-compile-hook
+                #:relative-pathname)
   (:export #:wild-package-inferred-system
            #:empty-wild-system))

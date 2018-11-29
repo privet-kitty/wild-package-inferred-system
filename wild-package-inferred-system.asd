@@ -1,7 +1,10 @@
 ;; -*- mode: lisp -*-
 
+#-ASDF3.3
+(error "wild-package-inferred-system requires ASDF 3.3.1 or later.")
+
 (defsystem "wild-package-inferred-system"
-  :version "0.0.1"
+  :version "0.0.2"
   :author "Hugo I."
   :license "MIT license"
   :depends-on ("md5")
