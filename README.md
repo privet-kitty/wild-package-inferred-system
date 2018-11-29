@@ -57,5 +57,8 @@ $ git clone https://github.com/privet-kitty/wild-package-inferred-system.git
 ### How can I let a specific file be excluded from wildcard?
 `wild-package-inferred-system` ignores the files of the type `.nosystem.lisp` and `.script.lisp` even if they match a given wild package.
 
+### How can I make a wild package in REPL?
+Just use `asdf:find-system`. Evaluating a form like `(asdf:find-system "foo/**/bar/*")` will make the wild package `:foo/**/bar/*` and register the corresponding system simultaneously.
+
 ## Copyright
 Copyright (c) 2018 Hugo I.
