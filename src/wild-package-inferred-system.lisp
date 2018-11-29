@@ -73,7 +73,7 @@ otherwise return a default system name computed from PACKAGE-NAME."
   ((name :initarg :name :reader component-name)
    (path :initarg :pathname :reader component-pathname))
   (:report (lambda (c s)
-             (format s "The system ~S corresponds the pathname ~S, which no actual CL source files matched."
+             (format s "The system ~S corresponds to the pathname ~S, which no actual CL source files matched."
                      (component-name c)
                      (component-pathname c)))))
 
