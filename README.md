@@ -59,10 +59,8 @@ $ git clone https://github.com/privet-kitty/wild-package-inferred-system.git
 ### How can I make a wild package in REPL?
 Just call `asdf:load-system`. Evaluating a form like `(asdf:load-system "foo/**/bar/*")` will make the wild package and register the corresponding system simultaneously (only if the system `foo` is `wild-package-inferred-system`, of course).
 
-### Can I use a wildcard `*` as a part of file or directory name like `foo/bar-*-*/*baz`?
-No.
-
-(Though most implementations can interpret `*` in a file or directory name, the specific behaviors slightly differ. See [Portability of wild pathname](https://gist.github.com/privet-kitty/b9a316f04bec9b0b3b1d2cc92087beca). Thus we won't be able to rely on `cl:directory` or `cl:parse-namestring` to implement it. In the first place, however, I doubt the necessity of this style.)
+### Can I use the wildcard `*` as a part of file or directory name like `foo/bar-*-*/*baz`?
+No. See [the issue](https://github.com/privet-kitty/wild-package-inferred-system/issues/1).
 
 ## Copyright
 Copyright (c) 2018 Hugo I.
