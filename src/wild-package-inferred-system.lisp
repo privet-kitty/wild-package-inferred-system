@@ -1,7 +1,7 @@
-;;
-;; This file largely consists of common code with
-;; asdf/package-inferred-system.lisp
-;; 
+;;;
+;;; This file largely consists of common code with
+;;; asdf/package-inferred-system.lisp
+;;; 
 
 (in-package :wild-package-inferred-system)
 
@@ -10,7 +10,7 @@
    (package-option :initform '((:use :cl)) :initarg :default-package-option :reader system-package-option))
   (:documentation "Is almost the same as ASDF:PACKAGE-INFERRED-SYSTEM, except it can interpret star `*' and globstar `**' in package names.
 
-The options given to DEFAULT-PACKAGE-OPTION are merged into auto-generated wild package forms. The default is ((:USE :CL)).
+Package options given to DEFAULT-PACKAGE-OPTION are merged into auto-generated wild package forms. The default is ((:USE :CL)).
 
 If REDUCE-WILD is true, all wild packages are deleted after LOAD-OP and LOAD-SOURCE-OP. (experimental)"))
 
@@ -148,7 +148,7 @@ w.r.t. PRIMARY-SYSTEM."
 
 (defun excluded-source-pathname-p (pathname)
   "wild-package-inferred-system ignores the file types .nosystem.lisp
-and .script.lisp, even if they match a given wild card."
+and .script.lisp even if they match a given wildcard."
   (let ((second-type (nth-value 1 (split-name-type (pathname-name pathname)))))
     (or (equal second-type "script")
         (equal second-type "nosystem"))))

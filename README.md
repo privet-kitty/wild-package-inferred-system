@@ -57,7 +57,7 @@ $ git clone https://github.com/privet-kitty/wild-package-inferred-system.git
 `wild-package-inferred-system` ignores the files whose types are `.nosystem.lisp` or `.script.lisp` even if they match a given wild package.
 
 ### How can I make a wild package in REPL?
-Just call `asdf:load-system`. Evaluating a form like `(asdf:load-system "foo/**/bar/*")` will make the wild package and register the corresponding system simultaneously (if the system `foo` is `wild-package-inferred-system`, of course).
+Just call `asdf:load-system`. Evaluating a form like `(asdf:load-system "foo/**/bar/*")` will make the wild package and register the corresponding system simultaneously (only if the system `foo` is `wild-package-inferred-system`, of course).
 
 ### Can I use a wildcard `*` as a part of file or directory name like `foo/bar-*-*/*baz`?
 No.
