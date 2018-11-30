@@ -188,7 +188,8 @@ and .script.lisp, even if they match a given wild card."
 (pushnew 'sysdef-wild-package-inferred-system-search *system-definition-search-functions*)
 
 (defun reduce-all-wild-packages (primary-name &optional (delete t))
-  "Reduces all wild packages beginning with PRIMARY-NAME"
+  "Reduces all wild packages beginning with
+PRIMARY-NAME. [experimental]"
   (unless (primary-system-p primary-name)
     (error "~S must be primary name." primary-name))
   (let ((primary-name (standard-case-symbol-name primary-name)))

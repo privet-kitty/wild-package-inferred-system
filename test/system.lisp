@@ -16,10 +16,11 @@
 
 ;; initialize
 (register-directory (asdf:system-relative-pathname "wild-package-inferred-system" "test/foo-wild/"))
-(uiop:delete-package* :foo-wild/**/*)
 
 (test foo-wild
+  (uiop:delete-package* :foo-wild/**/*)
   (finishes (asdf:load-system :foo-wild))
+  (is (null wpis::*system-cache-per-oos*))
   (signals empty-wild-system (asdf:locate-system "foo-wild/contains/no/such/*/system"))
   (is (set-equal '(:foo-wild/bar/macros
                    :foo-wild/bar/constants)

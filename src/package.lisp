@@ -9,4 +9,5 @@
                 #:around-compile-hook
                 #:relative-pathname)
   (:export #:wild-package-inferred-system
-           #:empty-wild-system))
+           #:empty-wild-system
+           #:reduce-all-wild-packages))
