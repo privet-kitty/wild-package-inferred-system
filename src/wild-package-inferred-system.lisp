@@ -84,13 +84,15 @@ otherwise return a default system name computed from PACKAGE-NAME."
 
 (defun generate-wild-package-filename (system)
   "Generates the filename for a given wild system."
-  (strcat (reduce (lambda (x y)
-                    (strcat x "_sl_" y))
-                  (nth-value 1 (split-unix-namestring-directory-components** system))
-                  :key #'string)
-          "_"
-          (calc-md5-signature system 4)
-          ".lisp"))
+  (multiple-value-bind (relative dir file type)
+      (split-unix-namestring-directory-components** system)
+    (declare (ignore relative type))
+    (strcat (reduce (lambda (x y) (strcat x "_SL_" y))
+                    dir
+                    :key #'string)
+            "_SL_"
+            (string (if (equalp "*" file) :wild file))
+            ".lisp")))
 
 (defun calc-wild-package-directory-pathname (toplevel-system-directory)
   "CL source files for wild systems are put under
