@@ -86,18 +86,6 @@ globstar."
       (merge-pathnames* (parse-unix-namestring** subpath :type type :want-relative t)
                         (pathname-directory-pathname pathname))))
 
-
-;; (defun calc-md5-signature (string &optional (byte 16))
-;;   (let ((signature (make-array (+ byte byte) :element-type 'base-char))
-;;         (md5sum (md5:md5sum-string string))
-;;         (dict #(#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\a #\b #\c #\d #\e #\f)))
-;;     (dotimes (idx byte signature)
-;;       (let ((units (logand (aref md5sum idx) #x0F))
-;;             (tens-place (ash (logand (aref md5sum idx) #xF0) -4))
-;;             (sig-idx (+ idx idx)))
-;;         (setf (aref signature sig-idx) (aref dict tens-place))
-;;         (setf (aref signature (1+ sig-idx)) (aref dict units))))))
-
 (defun reduce-package (package-designator)
   "Reduces the package from the graph of user-usee relationship: for
 example, (A B) using C using (D E F) is transformed to A using (D E F)

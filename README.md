@@ -31,9 +31,7 @@ Each source file in the system `foo-wild` will begin with `defpackage` or `uiop:
 
 Since a wild package is just a standard CL package, you can apply `find-package`, `use-package`, `in-package` etc. to it if once generated. Likewise you can apply `find-system`, `load-system` or other operations to the corresponding wild system.
 
-<!--
-You _can_ use any other combinations of wildcards, e.g. `foo/*/bar` (matching foo/sbcl/bar.lisp, foo/ccl/bar.lisp, ...) or `foo/**/interface/*`. However, I recommend that you think about if you really need such a designation.
--->
+You _can_ use any other combinations of wildcards, e.g. `foo/*/bar` (matching foo/sbcl/bar.lisp, foo/ccl/bar.lisp, ...) or `foo/**/interface/*`, though I recommend that you think about if you really need such a complicated designation.
 
 ## Dependencies
 You need **ASDF version 3.3.1** or later.
@@ -45,8 +43,6 @@ You need **ASDF version 3.3.1** or later.
 - ABCL
 - CLISP
 - ECL
-
-The only dependent library is [md5](https://github.com/pmai/md5), which can be installed with quicklisp.
 
 ## Installation
 ```
