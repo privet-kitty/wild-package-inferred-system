@@ -1,6 +1,6 @@
 # wild-package-inferred-system
 
-[![Build Status](https://api.travis-ci.org/privet-kitty/wild-package-inferred-system.svg?branch=master)](https://travis-ci.org/privet-kitty/wild-package-inferred-system/) **This library is experimental and still in a pre-alpha stage.**
+[![Build Status](https://api.travis-ci.org/privet-kitty/wild-package-inferred-system.svg?branch=master)](https://travis-ci.org/privet-kitty/wild-package-inferred-system/) **This library is still in a alpha stage.**
 
 `wild-package-inferred-system` is an extension of ASDF `package-inferred-system` that interprets star `*` and globstar `**` in package (or system) names.
 

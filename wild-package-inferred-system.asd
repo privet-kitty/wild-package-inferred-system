@@ -4,7 +4,7 @@
 (error "wild-package-inferred-system requires ASDF 3.3.1 or later.")
 
 (defsystem "wild-package-inferred-system"
-  :version "0.0.3"
+  :version "0.1.0"
   :author "Hugo I."
   :license "MIT license"
   :components ((:module "src"

@@ -22,8 +22,8 @@ If REDUCE-WILD is true, all wild packages are deleted after LOAD-OP and LOAD-SOU
 
 (defparameter *system-cache-per-oos* nil)
 
-;; File system of source repository is assumed to be invariant during
-;; an OPERATE.
+;; The file system of source repository is assumed to be invariant
+;; during an OPERATE.
 (defmethod operate :around (operation (component wild-package-inferred-system) &rest keys)
   (declare (ignore keys))
   (let ((*system-cache-per-oos* (make-hash-table :test #'equal)))
