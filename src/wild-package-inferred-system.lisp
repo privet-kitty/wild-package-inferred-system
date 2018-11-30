@@ -6,10 +6,13 @@
 (in-package :wild-package-inferred-system)
 
 (defclass wild-package-inferred-system (package-inferred-system)
-  ((reduce-wild :initform nil :initarg :reduce-wild :reader reduce-wild-p))
+  ((reduce-wild :initform nil :initarg :reduce-wild :reader reduce-wild-p)
+   (package-option :initform '((:use :cl)) :initarg :default-package-option :reader system-package-option))
   (:documentation "Is almost the same as ASDF:PACKAGE-INFERRED-SYSTEM, except it can interpret star `*' and globstar `**' in package names.
 
-If REDUCE-WILD is true, all wild packages are deleted after LOAD-OP or LOAD-SOURCE-OP. [experimental]"))
+The options given to DEFAULT-PACKAGE-OPTION are merged into auto-generated wild package forms. The default is ((:USE :CL)).
+
+If REDUCE-WILD is true, all wild packages are deleted after LOAD-OP and LOAD-SOURCE-OP. (experimental)"))
 
 (defmethod operate :after ((operation basic-load-op) (component wild-package-inferred-system)
                     &rest keys)
@@ -22,7 +25,7 @@ If REDUCE-WILD is true, all wild packages are deleted after LOAD-OP or LOAD-SOUR
 ;; File system of source repository is assumed to be invariant during
 ;; an OPERATE.
 (defmethod operate :around (operation (component wild-package-inferred-system) &rest keys)
-  (declare (ignorable keys))
+  (declare (ignore keys))
   (let ((*system-cache-per-oos* (make-hash-table :test #'equal)))
     (call-next-method)))
 
@@ -96,17 +99,22 @@ ASDF-OUTPUT-TRANSLATIONS)."
   (merge-pathnames* (strcat "__WILD_SYSTEM__/")
                     (apply-output-translations toplevel-system-directory)))
 
-(defun generate-reexporting-form (system dependencies)
+(defun generate-reexporting-form (system dependencies &optional (default-option '((:use :cl))))
   "Generates the UIOP:DEFINE-PACKAGE form for reexporting."
-  (let ((primary (primary-system-name system)))
+  (let ((primary (primary-system-name system))
+        (option (remove :use-reexport default-option :key #'car)) ; except use-reexport
+        (use-reexported-list (cdr (find :use-reexport default-option :key #'car))))
     `(define-package ,(intern (standard-case-symbol-name system) :keyword)
-         (:use)
+       ,@option
        (:use-reexport
-        ,@(mapcar (lambda (dependent-system)
-                    (intern (standard-case-symbol-name dependent-system) :keyword))
-                  (remove-if (lambda (dependent-system)
-                               (not (equal primary (primary-system-name dependent-system))))
-                             dependencies))))))
+        ,@(remove-duplicates
+           (append
+            use-reexported-list
+            (mapcar (lambda (dependent-system)
+                      (intern (standard-case-symbol-name dependent-system) :keyword))
+                    (remove-if (lambda (dependent-system)
+                                 (not (equal primary (primary-system-name dependent-system))))
+                               dependencies))))))))
 
 (define-condition wild-package-inferred-system-illegal-file-pathname (system-definition-error)
   ((path :initarg :pathname :reader error-pathname)
@@ -172,7 +180,9 @@ and .script.lisp, even if they match a given wild card."
                             (progn
                               (ensure-directories-exist translated-dir)
                               (with-output-file (out translated-path :if-exists :supersede)
-                                (writeln (generate-reexporting-form system dependencies)
+                                (writeln (generate-reexporting-form system
+                                                                    dependencies
+                                                                    (system-package-option top))
                                          :stream out))
                               (let ((new (eval `(defsystem ,system
                                                   :class wild-package-inferred-system
@@ -189,13 +199,13 @@ and .script.lisp, even if they match a given wild card."
 
 (defun reduce-all-wild-packages (primary-name &optional (delete t))
   "Reduces all wild packages beginning with
-PRIMARY-NAME. [experimental]"
+PRIMARY-NAME. (experimental)"
   (unless (primary-system-p primary-name)
     (error "~S must be primary name." primary-name))
   (let ((primary-name (standard-case-symbol-name primary-name)))
     (dolist (p (list-all-packages))
       (let ((name (package-name p)))
-        (when (and (equal primary-name (primary-system-name name))
+        (when (and (equal primary-name (primary-system-name name)) ; FIXME: primary-system-name is inappropriate as NAME is package name
                    (wild-pathname-p (parse-unix-namestring** name)))
           (reduce-package p)
           (when delete

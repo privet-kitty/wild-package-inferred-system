@@ -22,11 +22,13 @@
   (finishes (asdf:load-system :foo-wild))
   (is (null wpis::*system-cache-per-oos*))
   (signals empty-wild-system (asdf:locate-system "foo-wild/contains/no/such/*/system"))
-  (is (set-equal '(:foo-wild/bar/macros
+  (is (set-equal '(:cl :uiop
+                   :foo-wild/bar/macros
                    :foo-wild/bar/constants)
                  (package-use-list :foo-wild/bar/*)
                  :key #'find-package))
-  (is (set-equal '(:foo-wild/bar/macros
+  (is (set-equal '(:cl :uiop
+                   :foo-wild/bar/macros
                    :foo-wild/bar/constants
                    :foo-wild/bar/deep/functions)
                  (package-use-list :foo-wild/bar/**/*)

@@ -4,10 +4,15 @@
 
 (test generate-reexporting-form
   (is (equalp '(uiop:define-package :foo/**/*
-                (:use)
-                (:use-reexport :foo/bar :foo/bar/baz))
-              (wpis::generate-reexporting-form "foo/**/*" '("foo/bar" "foo/bar/baz"))))
-  (is (equalp '(uiop:define-package :foo/* (:use) (:use-reexport))
+                (:use :cl :uiop)
+                (:use-reexport :alexandria :foo/bar :foo/bar/baz))
+              (wpis::generate-reexporting-form "foo/**/*"
+                                               '("foo/bar" "foo/bar/baz")
+                                               '((:use :cl :uiop)
+                                                 (:use-reexport :alexandria)))))
+  (is (equalp '(uiop:define-package :foo/*
+                (:use :cl)
+                (:use-reexport))
               (wpis::generate-reexporting-form "foo/*" nil))))
 
 (test excluded-source-pathname-p

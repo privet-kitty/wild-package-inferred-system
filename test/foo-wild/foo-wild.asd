@@ -4,6 +4,6 @@
   :license "Public domain"
   :defsystem-depends-on (:wild-package-inferred-system)
   :class "wpis:wild-package-inferred-system"
-  ;; :reduce-wild t
+  :default-package-option ((:use :cl) (:use-reexport :uiop))
   :depends-on ("foo-wild/interface" "foo-wild/bar/*" "foo-wild/baz/*"))
 
