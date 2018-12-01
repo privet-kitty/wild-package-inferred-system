@@ -176,7 +176,8 @@ and .script.lisp even if they match a given wildcard."
                     (let ((files (delete-if #'excluded-source-pathname-p (directory* path))))
                       (unless files
                         (warn (make-condition 'empty-wild-system :name system :pathname path)))
-                      (let* ((dependencies (mapcar (lambda (path) (pathname-to-package-name path top))
+                      (let* ((dependencies (mapcar (lambda (path)
+                                                     (pathname-to-package-name path top))
                                                    files))
                              (previous (registered-system system))
                              (around-compile (around-compile-hook top))
