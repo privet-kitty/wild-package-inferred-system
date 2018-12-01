@@ -76,7 +76,7 @@ otherwise return a default system name computed from PACKAGE-NAME."
                      (component-name c)
                      (component-pathname c)))))
 
-(defun generate-wild-package-filename (system)
+(defun gen-wild-package-filename (system)
   "Generates the filename for a given wild system."
   (multiple-value-bind (relative dir file type)
       (split-unix-namestring-directory-components** system)
@@ -181,7 +181,7 @@ and .script.lisp even if they match a given wildcard."
                              (previous (registered-system system))
                              (around-compile (around-compile-hook top))
                              (translated-dir (calc-wild-package-directory-pathname dir))
-                             (dest-filename (generate-wild-package-filename system))
+                             (dest-filename (gen-wild-package-filename system))
                              (translated-path (merge-pathnames* dest-filename translated-dir)))
                         (if (same-wild-package-inferred-system-p previous system dir translated-path around-compile dependencies)
                             (when *system-cache-per-oos*

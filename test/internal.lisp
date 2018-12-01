@@ -19,4 +19,9 @@
 
 (test excluded-source-pathname-p
   (is (wpis::excluded-source-pathname-p #P"foo/bar.script.lisp"))
-  (is (wpis::excluded-source-pathname-p #P"/foo/bar/baz.nosystem.lisp")))
+  (is (wpis::excluded-source-pathname-p #P"/foo/bar/baz.nosystem.lisp"))
+  (is (not (wpis::excluded-source-pathname-p #P"foo/bar.lisp"))))
+
+(test gen-wild-package-filename
+  (is (equal "foo_SL_WILD-INFERIORS_SL_bar_SL_WILD.lisp"
+             (wpis::gen-wild-package-filename "foo/**/bar/*"))))
