@@ -96,3 +96,12 @@ and B using (D E F) if package C is reduced. "
       (unuse-package package-designator using)
       (dolist (used used-list)
         (use-package used using)))))
+
+(defun make-keyword (string-designator &optional (force-case :standard))
+  (intern (funcall (etypecase force-case
+                     (null #'identity)
+                     ((eql :standard) #'uiop:standard-case-symbol-name)
+                     ((eql :upper) #'string-upcase)
+                     ((eql :lower) #'string-downcase))
+                   string-designator)
+          :keyword))

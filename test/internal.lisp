@@ -2,18 +2,20 @@
 
 (in-suite :wild-package-inferred-system-suite)
 
-(test generate-reexporting-form
+(test gen-reexporting-form
   (is (equalp '(uiop:define-package :foo/**/*
+                (:nicknames :foo)
                 (:use :cl :uiop)
-                (:use-reexport :alexandria :foo/bar :foo/bar/baz))
-              (wpis::generate-reexporting-form "foo/**/*"
-                                               '("foo/bar" "foo/bar/baz")
-                                               '((:use :cl :uiop)
-                                                 (:use-reexport :alexandria)))))
+                (:use-reexport :cl-ppcre :foo/bar :foo/bar/baz))
+              (wpis::gen-reexporting-form "foo/**/*"
+                                          '("foo/bar" "foo/bar/baz")
+                                          :default-option '((:use :cl :uiop)
+                                                            (:use-reexport :cl-ppcre))
+                                          :non-wild-nickname t)))
   (is (equalp '(uiop:define-package :foo/*
                 (:use :cl)
                 (:use-reexport))
-              (wpis::generate-reexporting-form "foo/*" nil))))
+              (wpis::gen-reexporting-form "foo/*" nil))))
 
 (test excluded-source-pathname-p
   (is (wpis::excluded-source-pathname-p #P"foo/bar.script.lisp"))

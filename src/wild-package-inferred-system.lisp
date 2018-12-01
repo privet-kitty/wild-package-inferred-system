@@ -6,8 +6,9 @@
 (in-package :wild-package-inferred-system)
 
 (defclass wild-package-inferred-system (package-inferred-system)
-  ((reduce-wild :initform nil :initarg :reduce-wild :reader reduce-wild-p)
-   (package-option :initform '((:use :cl)) :initarg :default-package-option :reader system-package-option))
+  ((package-option :initform '((:use :cl)) :initarg :default-package-option :reader system-package-option)
+   (non-wild-nickname :initform nil :initarg :add-non-wild-nickname :reader non-wild-nickname-p)
+   (reduce-wild :initform nil :initarg :reduce-wild :reader reduce-wild-p))
   (:documentation "Is almost the same as ASDF:PACKAGE-INFERRED-SYSTEM, except it can interpret star `*' and globstar `**' in package names.
 
 Package options given to DEFAULT-PACKAGE-OPTION are merged into auto-generated wild package forms. The default is ((:USE :CL)).
@@ -101,19 +102,21 @@ ASDF-OUTPUT-TRANSLATIONS)."
   (merge-pathnames* (strcat "__WILD_SYSTEM__/")
                     (apply-output-translations toplevel-system-directory)))
 
-(defun generate-reexporting-form (system dependencies &optional (default-option '((:use :cl))))
+(defun gen-reexporting-form (system dependencies &key non-wild-nickname (default-option '((:use :cl))))
   "Generates the UIOP:DEFINE-PACKAGE form for reexporting."
   (let ((primary (primary-system-name system))
         (option (remove :use-reexport default-option :key #'car)) ; except use-reexport
-        (use-reexported-list (cdr (find :use-reexport default-option :key #'car))))
-    `(define-package ,(intern (standard-case-symbol-name system) :keyword)
+        (use-reexported-packages (cdr (find :use-reexport default-option :key #'car))))
+    `(define-package ,(make-keyword system)
+         ,@(if non-wild-nickname
+               `((:nicknames ,(make-keyword (extract-non-wild-prefix system))))
+               nil)
        ,@option
        (:use-reexport
         ,@(remove-duplicates
            (append
-            use-reexported-list
-            (mapcar (lambda (dependent-system)
-                      (intern (standard-case-symbol-name dependent-system) :keyword))
+            use-reexported-packages
+            (mapcar #'make-keyword
                     (remove-if (lambda (dependent-system)
                                  (not (equal primary (primary-system-name dependent-system))))
                                dependencies))))))))
@@ -153,6 +156,17 @@ and .script.lisp even if they match a given wildcard."
     (or (equal second-type "script")
         (equal second-type "nosystem"))))
 
+(defun extract-non-wild-prefix (system)
+  "foo/bar/* to foo/bar; foo/**/baz/*/* to foo."
+  (check-type system string)
+  (assert (not (zerop (length system))))
+  (assert (not (char= #\* (char system 0))))
+  (loop for pos from 0 below (length system)
+        when (and (char= #\* (char system pos))
+                  (char= #\/ (char system (- pos 1))))
+          do (loop-finish)
+        finally (return (subseq system 0 (- pos 1)))))
+
 ;; sysdef search function to push into *system-definition-search-functions*
 (defun sysdef-wild-package-inferred-system-search (system)
   (or (and *system-cache-per-oos*
@@ -182,9 +196,10 @@ and .script.lisp even if they match a given wildcard."
                             (progn
                               (ensure-directories-exist translated-dir)
                               (with-output-file (out translated-path :if-exists :supersede)
-                                (writeln (generate-reexporting-form system
-                                                                    dependencies
-                                                                    (system-package-option top))
+                                (writeln (gen-reexporting-form system
+                                                               dependencies
+                                                               :non-wild-nickname (non-wild-nickname-p top)
+                                                               :default-option (system-package-option top))
                                          :stream out))
                               (let ((new (eval `(defsystem ,system
                                                   :class wild-package-inferred-system
