@@ -12,7 +12,7 @@
 
 Package options given to :DEFAULT-PACKAGE-OPTION are merged into auto-generated wild package forms. The default is ((:USE :CL)).
 
-If :ADD-NON-WILD-NICKNAME is true, a nickname is given to each wild package, which is the prefix containing no wildcards: e.g. the nickname of :foo/bar/**/baz/* is :foo/bar. Therefore you cannot make packages with a common prefix (e.g. :foo/bar/**/baz* and :foo/bar/*) if you use this option."))
+If :ADD-NON-WILD-NICKNAME is true, a nickname is given to each wild package, which is the prefix containing no wildcards: e.g. the nickname of :foo/bar/**/baz/* is :foo/bar. Therefore you cannot make packages with a common prefix (e.g. :foo/bar/**/baz* and :foo/bar/*) if you enable this option."))
 
 (defparameter *system-cache-per-oos* nil)
 
