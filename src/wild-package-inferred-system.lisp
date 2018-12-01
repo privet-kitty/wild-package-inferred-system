@@ -7,19 +7,12 @@
 
 (defclass wild-package-inferred-system (package-inferred-system)
   ((package-option :initform '((:use :cl)) :initarg :default-package-option :reader system-package-option)
-   (non-wild-nickname :initform nil :initarg :add-non-wild-nickname :reader non-wild-nickname-p)
-   (reduce-wild :initform nil :initarg :reduce-wild :reader reduce-wild-p))
+   (non-wild-nickname :initform nil :initarg :add-non-wild-nickname :reader non-wild-nickname-p))
   (:documentation "Is almost the same as ASDF:PACKAGE-INFERRED-SYSTEM, except it can interpret star `*' and globstar `**' in package names.
 
-Package options given to DEFAULT-PACKAGE-OPTION are merged into auto-generated wild package forms. The default is ((:USE :CL)).
+Package options given to :DEFAULT-PACKAGE-OPTION are merged into auto-generated wild package forms. The default is ((:USE :CL)).
 
-If REDUCE-WILD is true, all wild packages are deleted after LOAD-OP and LOAD-SOURCE-OP. (experimental)"))
-
-(defmethod operate :after ((operation basic-load-op) (component wild-package-inferred-system)
-                    &rest keys)
-  (declare (ignore keys))
-  (when (reduce-wild-p component)
-    (reduce-all-wild-packages (component-name component))))
+If :ADD-NON-WILD-NICKNAME is true, a nickname is given to each wild package, which is the prefix containing no wildcards: e.g. the nickname of :foo/bar/**/baz/* is :foo/bar. Therefore you cannot make packages with a common prefix (e.g. :foo/bar/**/baz* and :foo/bar/*) if you use this option."))
 
 (defparameter *system-cache-per-oos* nil)
 
