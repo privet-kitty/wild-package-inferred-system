@@ -95,15 +95,14 @@ ASDF-OUTPUT-TRANSLATIONS)."
   (merge-pathnames* (strcat "__WILD_SYSTEM__/")
                     (apply-output-translations toplevel-system-directory)))
 
-(defun gen-reexporting-form (system dependencies &key non-wild-nickname (default-option '((:use :cl))))
+(defun gen-reexporting-form (system dependencies &key nickname (default-option '((:use :cl))))
   "Generates the UIOP:DEFINE-PACKAGE form for reexporting."
   (let ((primary (primary-system-name system))
         (option (remove :use-reexport default-option :key #'car)) ; except use-reexport
         (use-reexported-packages (cdr (find :use-reexport default-option :key #'car))))
     `(define-package ,(make-keyword system)
-         ,@(if non-wild-nickname
-               `((:nicknames ,(make-keyword (extract-non-wild-prefix system))))
-               nil)
+         ,@(when nickname
+             `((:nicknames ,(make-keyword nickname))))
        ,@option
        (:use-reexport
         ,@(remove-duplicates
@@ -183,7 +182,9 @@ and .script.lisp even if they match a given wildcard."
                              (around-compile (around-compile-hook top))
                              (translated-dir (calc-wild-package-directory-pathname dir))
                              (dest-filename (gen-wild-package-filename system))
-                             (translated-path (merge-pathnames* dest-filename translated-dir)))
+                             (translated-path (merge-pathnames* dest-filename translated-dir))
+                             (nickname (when (non-wild-nickname-p top)
+                                         (make-keyword (extract-non-wild-prefix system)))))
                         (if (same-wild-package-inferred-system-p previous system dir translated-path around-compile dependencies)
                             (when *system-cache-per-oos*
                               (setf (gethash system *system-cache-per-oos*) previous))
@@ -192,7 +193,7 @@ and .script.lisp even if they match a given wildcard."
                               (with-output-file (out translated-path :if-exists :supersede)
                                 (writeln (gen-reexporting-form system
                                                                dependencies
-                                                               :non-wild-nickname (non-wild-nickname-p top)
+                                                               :nickname nickname
                                                                :default-option (system-package-option top))
                                          :stream out))
                               (let ((new (eval `(defsystem ,system

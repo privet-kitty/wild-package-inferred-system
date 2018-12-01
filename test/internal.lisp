@@ -11,7 +11,7 @@
                                           '("foo/bar" "foo/bar/baz")
                                           :default-option '((:use :cl :uiop)
                                                             (:use-reexport :cl-ppcre))
-                                          :non-wild-nickname t)))
+                                          :nickname :foo)))
   (is (equalp '(uiop:define-package :foo/*
                 (:use :cl)
                 (:use-reexport))
