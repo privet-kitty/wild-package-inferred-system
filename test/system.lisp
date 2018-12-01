@@ -1,6 +1,6 @@
-;;
-;; Test of example systems
-;;
+;;;
+;;; Test of example systems
+;;;
 
 (in-package :wild-package-inferred-system/test)
 
@@ -13,12 +13,11 @@
 
 (in-suite :wild-package-inferred-system-suite)
 
-
-;; initialize
-(register-directory (asdf:system-relative-pathname "wild-package-inferred-system" "test/foo-wild/"))
-
 (test foo-wild
+  ;; initialize
+  (register-directory (asdf:system-relative-pathname "wild-package-inferred-system" "test/foo-wild/"))
   (uiop:delete-package* :foo-wild/**/*)
+
   (finishes (asdf:load-system :foo-wild))
   (is (null wpis::*system-cache-per-oos*))
   (signals empty-wild-system (asdf:locate-system "foo-wild/contains/no/such/*/system"))
@@ -38,7 +37,7 @@
                    (*standard-input* (make-string-input-stream "t nil")))
                (uiop:symbol-call :foo-wild :hello out)
                (get-output-stream-string out))))
-  (is (uiop:find-symbol* :my-princ :foo-wild/bar/deep/functions nil))
+  (is (fboundp (uiop:find-symbol* :my-princ :foo-wild/bar/deep/functions nil)))
   (is (null (uiop:find-symbol* :my-princ :foo-wild/bar/* nil)))
   (is (null (uiop:find-package* :foo-wild/**/* nil)))
   (finishes (asdf:load-system :foo-wild/**/*)))

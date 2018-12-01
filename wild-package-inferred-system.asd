@@ -10,7 +10,7 @@
   :components ((:module "src"
                 :components
                 ((:file "package")
-                 (:file "system-utilities")
+                 (:file "internal-utilities")
                  (:file "wild-package-inferred-system"))))
   :description ""
   :long-description
