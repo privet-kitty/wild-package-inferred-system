@@ -1,5 +1,5 @@
 (uiop:define-package :foo-wild/bar/deep/functions
-    (:use :cl :foo-wild/bar/*)
+  (:use :cl :foo-wild/bar/*)
   (:export #:my-princ))
 
 (in-package :foo-wild/bar/deep/functions)

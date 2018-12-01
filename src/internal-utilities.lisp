@@ -4,35 +4,34 @@
 
 (in-package :wild-package-inferred-system)
 
-(defun split-unix-namestring-directory-components**
-      (unix-namestring &key ensure-directory dot-dot)
+(defun split-unix-namestring-directory-components** (unix-namestring &key ensure-directory dot-dot)
   "Is almost same as UIOP:SPLIT-UNIX-NAMESTRING-DIRECTORY-COMPONENTS
 but interprets star `*' and globstar `**'."
-    (check-type unix-namestring string)
-    (check-type dot-dot (member nil :back :up))
-    (if (and (not (find #\/ unix-namestring)) (not ensure-directory)
-             (plusp (length unix-namestring)))
-        (values :relative () unix-namestring t)
-        (let* ((components (split-string unix-namestring :separator "/"))
-               (last-comp (car (last components))))
-          (multiple-value-bind (relative components)
-              (if (equal (first components) "")
-                  (if (equal (first-char unix-namestring) #\/)
-                      (values :absolute (cdr components))
-                      (values :relative nil))
-                  (values :relative components))
-            (setf components (remove-if #'(lambda (x) (member x '("" ".") :test #'equal))
-                                        components))
-            (setf components (substitute (or dot-dot :back) ".." components :test #'equal))
-            (setf components (substitute :wild-inferiors "**" components :test #'equal))
-            (setf components (substitute :wild "*" components :test #'equal))
-            (cond
-              ((equal last-comp "")
-               (values relative components nil nil)) ; "" already removed from components
-              (ensure-directory
-               (values relative components nil nil))
-              (t
-               (values relative (butlast components) last-comp nil)))))))
+  (check-type unix-namestring string)
+  (check-type dot-dot (member nil :back :up))
+  (if (and (not (find #\/ unix-namestring)) (not ensure-directory)
+           (plusp (length unix-namestring)))
+      (values :relative () unix-namestring t)
+      (let* ((components (split-string unix-namestring :separator "/"))
+             (last-comp (car (last components))))
+        (multiple-value-bind (relative components)
+            (if (equal (first components) "")
+                (if (equal (first-char unix-namestring) #\/)
+                    (values :absolute (cdr components))
+                    (values :relative nil))
+                (values :relative components))
+          (setf components (remove-if #'(lambda (x) (member x '("" ".") :test #'equal))
+                                      components))
+          (setf components (substitute (or dot-dot :back) ".." components :test #'equal))
+          (setf components (substitute :wild-inferiors "**" components :test #'equal))
+          (setf components (substitute :wild "*" components :test #'equal))
+          (cond
+            ((equal last-comp "")
+             (values relative components nil nil)) ; "" already removed from components
+            (ensure-directory
+             (values relative components nil nil))
+            (t
+             (values relative (butlast components) last-comp nil)))))))
 
 
 (defun split-name-type** (filename)

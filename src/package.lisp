@@ -1,5 +1,5 @@
 (uiop:define-package :wild-package-inferred-system
-    (:nicknames :wpis)
+  (:nicknames :wpis)
   (:use :cl :uiop :asdf)
   (:import-from :asdf
                 #:basic-load-op
