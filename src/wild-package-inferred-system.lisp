@@ -145,12 +145,12 @@ w.r.t. PRIMARY-SYSTEM."
   "wild-package-inferred-system ignores the file names beginning with
 dot `.' and file types .nosystem.lisp and .script.lisp even if they
 match a given wildcard."
-  (let* ((name (pathname-name pathname))
-         (second-type (nth-value 1 (split-name-type name))))
+  (let ((name (pathname-name pathname)))
     (or (not (stringp name))
         (char= #\. (char name 0))
-        (equal second-type "script")
-        (equal second-type "nosystem"))))
+        (let ((second-type (nth-value 1 (split-name-type name))))
+          (or (equal second-type "script")
+              (equal second-type "nosystem"))))))
 
 (defun extract-non-wild-prefix (system)
   "foo/bar/* to foo/bar; foo/**/baz/*/* to foo."
