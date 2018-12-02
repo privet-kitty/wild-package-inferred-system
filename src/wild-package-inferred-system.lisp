@@ -6,7 +6,7 @@
 (in-package :wild-package-inferred-system)
 
 (defclass wild-package-inferred-system (package-inferred-system)
-  ((package-option :initform '((:use :cl)) :initarg :default-package-option :reader system-package-option)
+  ((package-option :initform '((:use :cl)) :initarg :default-package-option :reader default-package-option)
    (non-wild-nickname :initform nil :initarg :add-non-wild-nickname :reader non-wild-nickname-p))
   (:documentation "Is almost the same as ASDF:PACKAGE-INFERRED-SYSTEM, except it can interpret star `*' and globstar `**' in package names.
 
@@ -161,7 +161,7 @@ and .script.lisp even if they match a given wildcard."
 
 ;; sysdef search function to push into *system-definition-search-functions*
 (defun sysdef-wild-package-inferred-system-search (system)
-  (or (and *system-cache-per-oos*
+  (or (and *system-cache-per-oos* ; Returns the cached system during an ASDF:OOS
            (gethash system *system-cache-per-oos*))
       (let ((primary (primary-system-name system)))
         (unless (equal primary system)
@@ -170,7 +170,7 @@ and .script.lisp even if they match a given wildcard."
               (if-let (dir (component-pathname top))
                 (let* ((sub (subseq system (1+ (length primary))))
                        (path (subpathname** dir sub :type "lisp")))
-                  ;; Leaves it to package-inferred-system, if no wildcard is used.
+                  ;; Leaves it to package-inferred-system if it contains no wildcard.
                   (when (wild-pathname-p path)
                     (let ((files (delete-if #'excluded-source-pathname-p (directory* path))))
                       (unless files
@@ -192,8 +192,10 @@ and .script.lisp even if they match a given wildcard."
                                              system
                                              dependencies
                                              :nickname nickname
-                                             :default-option (system-package-option top))))
+                                             :default-option (default-package-option top))))
                               (ensure-directories-exist translated-dir)
+                              ;; Doesn't touch the source file if the
+                              ;; reexporting forms are identical.
                               (unless (and (file-exists-p translated-path)
                                            (equalp new-form (read-file-form translated-path)))
                                 (with-output-file (out translated-path :if-exists :supersede)
