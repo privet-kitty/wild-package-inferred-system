@@ -188,24 +188,27 @@ and .script.lisp even if they match a given wildcard."
                         (if (same-wild-package-inferred-system-p previous system dir translated-path around-compile dependencies)
                             (when *system-cache-per-oos*
                               (setf (gethash system *system-cache-per-oos*) previous))
-                            (progn
+                            (let ((new-form (gen-reexporting-form
+                                             system
+                                             dependencies
+                                             :nickname nickname
+                                             :default-option (system-package-option top))))
                               (ensure-directories-exist translated-dir)
-                              (with-output-file (out translated-path :if-exists :supersede)
-                                (writeln (gen-reexporting-form system
-                                                               dependencies
-                                                               :nickname nickname
-                                                               :default-option (system-package-option top))
-                                         :stream out))
-                              (let ((new (eval `(defsystem ,system
-                                                  :class wild-package-inferred-system
-                                                  :source-file ,(system-source-file top)
-                                                  :pathname ,dir
-                                                  :depends-on ,dependencies
-                                                  :around-compile ,around-compile
-                                                  :components ((cl-source-file "lisp" :pathname ,translated-path))))))
+                              (unless (and (file-exists-p translated-path)
+                                           (equalp new-form (read-file-form translated-path)))
+                                (with-output-file (out translated-path :if-exists :supersede)
+                                  (writeln new-form :stream out)))
+                              (let ((new-system (eval
+                                                 `(defsystem ,system
+                                                    :class wild-package-inferred-system
+                                                    :source-file ,(system-source-file top)
+                                                    :pathname ,dir
+                                                    :depends-on ,dependencies
+                                                    :around-compile ,around-compile
+                                                    :components ((cl-source-file "lisp" :pathname ,translated-path))))))
                                 (when *system-cache-per-oos*
-                                  (setf (gethash system *system-cache-per-oos*) new))
-                                new))))))))))))))
+                                  (setf (gethash system *system-cache-per-oos*) new-system))
+                                new-system))))))))))))))
 
 (pushnew 'sysdef-wild-package-inferred-system-search *system-definition-search-functions*)
 
