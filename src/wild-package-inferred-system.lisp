@@ -142,10 +142,14 @@ w.r.t. PRIMARY-SYSTEM."
                                             :type nil)))))
 
 (defun excluded-source-pathname-p (pathname)
-  "wild-package-inferred-system ignores the file types .nosystem.lisp
-and .script.lisp even if they match a given wildcard."
-  (let ((second-type (nth-value 1 (split-name-type (pathname-name pathname)))))
-    (or (equal second-type "script")
+  "wild-package-inferred-system ignores the file names beginning with
+dot `.' and file types .nosystem.lisp and .script.lisp even if they
+match a given wildcard."
+  (let* ((name (pathname-name pathname))
+         (second-type (nth-value 1 (split-name-type name))))
+    (or (not (stringp name))
+        (char= #\. (char name 0))
+        (equal second-type "script")
         (equal second-type "nosystem"))))
 
 (defun extract-non-wild-prefix (system)
