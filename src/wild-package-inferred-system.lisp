@@ -226,7 +226,7 @@ PRIMARY-NAME. (experimental)"
   (let ((primary-name (standard-case-symbol-name primary-name)))
     (dolist (p (list-all-packages))
       (let ((name (package-name p)))
-        (when (and (equal primary-name (primary-system-name name)) ; FIXME: primary-system-name is inappropriate as NAME is package name
+        (when (and (equal primary-name (primary-system-name name)) ; FIXME: primary-system-name will be inappropriate because NAME is a package name
                    (wild-pathname-p (parse-unix-namestring** name)))
           (reduce-package p)
           (when delete
