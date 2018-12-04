@@ -34,7 +34,7 @@ Since a wild package is just a standard CL package, you can apply `find-package`
 You _can_ use any other combinations of wildcards, e.g. `foo/*/bar` (matching foo/win32/bar.lisp, foo/linux/bar.lisp, ...) or `foo/**/*/interface/*`, though I recommend that you think about if you really need such a complicated desigination.
 
 ## Dependencies
-**ASDF version 3.3.1** or later is required.
+**ASDF version 3.3** or later is required.
 
 `wild-package-inferred-system` is tested on the (usually latest vesions of the) following implementations:
 - SBCL

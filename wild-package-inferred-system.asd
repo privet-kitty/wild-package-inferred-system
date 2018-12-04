@@ -13,7 +13,7 @@
                 ((:file "package")
                  (:file "internal-utilities")
                  (:file "wild-package-inferred-system"))))
-  :description ""
+  :description "Introduces wildcards into package-inferred-system"
   :long-description
   #.(read-file-string
      (subpathname *load-pathname* "README.md"))
