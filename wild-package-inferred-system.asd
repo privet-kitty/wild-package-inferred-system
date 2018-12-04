@@ -5,7 +5,7 @@
        (asdf:asdf-version))
 
 (defsystem "wild-package-inferred-system"
-  :version "0.1.2"
+  :version "0.1.3"
   :author "Hugo I."
   :license "MIT"
   :components ((:module "src"
@@ -27,4 +27,4 @@
                              (:file "system"))))
   :description "Test system for wild-package-inferred-system"
   :perform (test-op (o c)
-                    (uiop:eval-input "(fiveam:run! :wild-package-inferred-system-suite)")))
+                    (eval-input "(fiveam:run! :wild-package-inferred-system-suite)")))
