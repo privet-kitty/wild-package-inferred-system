@@ -99,7 +99,7 @@ and B using (D E F) if package C is reduced. "
 (defun make-keyword (string-designator &optional (force-case :standard))
   (intern (funcall (etypecase force-case
                      (null #'identity)
-                     ((eql :standard) #'uiop:standard-case-symbol-name)
+                     ((eql :standard) #'standard-case-symbol-name)
                      ((eql :upper) #'string-upcase)
                      ((eql :lower) #'string-downcase))
                    string-designator)

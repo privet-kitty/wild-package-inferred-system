@@ -13,13 +13,29 @@
 
 (in-suite :wild-package-inferred-system-suite)
 
+(let ((list nil))
+  (defun collect-system (system)
+    (pushnew system list)
+    nil)
+  (defun reset-collected-systems ()
+    (setf list nil))
+  (defun doubly-collected-system-exists-p ()
+    (/= (length list)
+        (length (remove-duplicates list :test #'equal)))))
+
 (test foo-wild
   ;; initialize
   (register-directory (asdf:system-relative-pathname "wild-package-inferred-system" "test/foo-wild/"))
   (uiop:delete-package* :foo-wild/**/*)
 
-  (finishes (asdf:load-system :foo-wild))
-  (is (null wpis::*system-cache-per-oos*))
+  (reset-collected-systems)
+  (let ((asdf:*system-definition-search-functions*
+          (cons #'collect-system asdf:*system-definition-search-functions*)))
+    (finishes (asdf:load-system :foo-wild)))
+  ;; Test if *SYSTEM-DEFINITION-SEARCH-FUNCTIONS* are not called twice
+  ;; for a wild system during a session.
+  (is (not (doubly-collected-system-exists-p)))
+  
   (signals empty-wild-system (asdf:locate-system "foo-wild/contains/no/such/*/system"))
   (is (set-equal '(:cl :uiop
                    :foo-wild/bar/macros

@@ -20,15 +20,6 @@ nickname of :foo/bar/**/baz/* is :foo/bar. Therefore you cannot make
 packages with a common prefix (e.g. :foo/bar/**/baz* and :foo/bar/*)
 if you enable this option."))
 
-(defparameter *system-cache-per-oos* nil)
-
-;; The file system of source repository is assumed to be invariant
-;; during an OPERATE.
-(defmethod operate :around (operation (component wild-package-inferred-system) &rest keys)
-  (declare (ignore keys))
-  (let ((*system-cache-per-oos* (make-hash-table :test #'equal)))
-    (call-next-method)))
-
 ;; Is a given form recognizable as a defpackage form?
 (defun defpackage-form-p (form)
   (and (consp form)
@@ -119,7 +110,7 @@ ASDF-OUTPUT-TRANSLATIONS)."
                                  (not (equal primary (primary-system-name dependent-system))))
                                dependencies))))))))
 
-(define-condition wild-package-inferred-system-illegal-file-pathname (system-definition-error)
+(define-condition uninterpretable-file-pathname (system-definition-error)
   ((path :initarg :pathname :reader error-pathname)
    (base :initarg :base-pathname :reader error-base-pathname))
   (:report (lambda (c s)
@@ -138,7 +129,7 @@ w.r.t. PRIMARY-SYSTEM."
                    do (return (make-pathname :name (pathname-name pathname)
                                              :directory (cons :relative rest)))
                  unless (equal (car rest) (car base-rest))
-                   do (error (make-condition 'wild-package-inferred-system-illegal-file-pathname
+                   do (error (make-condition 'uninterpretable-file-pathname
                                              :pathname pathname
                                              :base-pathname primary-pathname)))))
     (strcat (component-name primary-system)
@@ -172,56 +163,51 @@ match a given wildcard."
 
 ;; sysdef search function to push into *system-definition-search-functions*
 (defun sysdef-wild-package-inferred-system-search (system)
-  (or (and *system-cache-per-oos* ; Returns the cached system during an ASDF:OOS
-           (gethash system *system-cache-per-oos*))
-      (let ((primary (primary-system-name system)))
-        (unless (equal primary system)
-          (let ((top (find-system primary nil)))
-            (when (typep top 'wild-package-inferred-system)
-              (if-let (dir (component-pathname top))
-                (let* ((sub (subseq system (1+ (length primary))))
-                       (path (subpathname** dir sub :type "lisp")))
-                  ;; Leaves it to package-inferred-system if it contains no wildcard.
-                  (when (wild-pathname-p path)
-                    (let ((files (delete-if #'excluded-source-pathname-p (directory* path))))
-                      (unless files
-                        (warn (make-condition 'empty-wild-system :name system :pathname path)))
-                      (let* ((dependencies (mapcar (lambda (path)
-                                                     (pathname-to-package-name path top))
-                                                   files))
-                             (previous (registered-system system))
-                             (around-compile (around-compile-hook top))
-                             (translated-dir (calc-wild-package-directory-pathname dir))
-                             (dest-filename (gen-wild-package-filename system))
-                             (translated-path (merge-pathnames* dest-filename translated-dir))
-                             (nickname (when (non-wild-nickname-p top)
-                                         (make-keyword (extract-non-wild-prefix system)))))
-                        (if (same-wild-package-inferred-system-p previous system dir translated-path around-compile dependencies)
-                            (when *system-cache-per-oos*
-                              (setf (gethash system *system-cache-per-oos*) previous))
-                            (let ((new-form (gen-reexporting-form
-                                             system
-                                             dependencies
-                                             :nickname nickname
-                                             :default-option (default-package-option top))))
-                              (ensure-directories-exist translated-dir)
-                              ;; Doesn't touch the source file if the
-                              ;; reexporting forms are identical.
-                              (unless (and (file-exists-p translated-path)
-                                           (equalp new-form (read-file-form translated-path)))
-                                (with-output-file (out translated-path :if-exists :supersede)
-                                  (writeln new-form :stream out)))
-                              (let ((new-system (eval
-                                                 `(defsystem ,system
-                                                    :class wild-package-inferred-system
-                                                    :source-file ,(system-source-file top)
-                                                    :pathname ,dir
-                                                    :depends-on ,dependencies
-                                                    :around-compile ,around-compile
-                                                    :components ((cl-source-file "lisp" :pathname ,translated-path))))))
-                                (when *system-cache-per-oos*
-                                  (setf (gethash system *system-cache-per-oos*) new-system))
-                                new-system))))))))))))))
+  (let ((primary (primary-system-name system)))
+    (unless (equal primary system)
+      (let ((top (find-system primary nil)))
+        (when (typep top 'wild-package-inferred-system)
+          (if-let (dir (component-pathname top))
+            (let* ((sub (subseq system (1+ (length primary))))
+                   (path (subpathname** dir sub :type "lisp")))
+              ;; Leaves it to package-inferred-system if it contains no wildcard.
+              (when (wild-pathname-p path)
+                (let ((files (delete-if #'excluded-source-pathname-p (directory* path))))
+                  (unless files
+                    (warn (make-condition 'empty-wild-system :name system :pathname path)))
+                  (let* ((dependencies (mapcar (lambda (path)
+                                                 (pathname-to-package-name path top))
+                                               files))
+                         (previous (registered-system system))
+                         (around-compile (around-compile-hook top))
+                         (translated-dir (calc-wild-package-directory-pathname dir))
+                         (dest-filename (gen-wild-package-filename system))
+                         (translated-path (merge-pathnames* dest-filename translated-dir))
+                         (nickname (when (non-wild-nickname-p top)
+                                     (make-keyword (extract-non-wild-prefix system)))))
+                    (if (same-wild-package-inferred-system-p previous system dir translated-path around-compile dependencies)
+                        previous
+                        (let ((new-form (gen-reexporting-form
+                                         system
+                                         dependencies
+                                         :nickname nickname
+                                         :default-option (default-package-option top))))
+                          (ensure-directories-exist translated-dir)
+                          ;; Doesn't touch the source file if the
+                          ;; reexporting forms are identical.
+                          (unless (and (file-exists-p translated-path)
+                                       (equalp new-form (read-file-form translated-path)))
+                            (with-output-file (out translated-path :if-exists :supersede)
+                              (writeln new-form :stream out)))
+                          (let ((new-system (eval
+                                             `(defsystem ,system
+                                                :class wild-package-inferred-system
+                                                :source-file ,(system-source-file top)
+                                                :pathname ,dir
+                                                :depends-on ,dependencies
+                                                :around-compile ,around-compile
+                                                :components ((cl-source-file "lisp" :pathname ,translated-path))))))
+                            new-system)))))))))))))
 
 (pushnew 'sysdef-wild-package-inferred-system-search *system-definition-search-functions*)
 
