@@ -5,7 +5,7 @@
        (asdf:asdf-version))
 
 (defsystem "wild-package-inferred-system"
-  :version "0.1.1"
+  :version "0.1.2"
   :author "Hugo I."
   :license "MIT"
   :components ((:module "src"
