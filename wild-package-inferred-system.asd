@@ -7,13 +7,12 @@
 (defsystem "wild-package-inferred-system"
   :version "0.1.1"
   :author "Hugo I."
-  :license "MIT license"
+  :license "MIT"
   :components ((:module "src"
-                :components
-                ((:file "package")
-                 (:file "internal-utilities")
-                 (:file "wild-package-inferred-system"))))
-  :description "Introduces wildcards into package-inferred-system"
+                :components ((:file "package")
+                             (:file "internal-utilities")
+                             (:file "main"))))
+  :description "Introduces wildcards `*' and `**' into package-inferred-system"
   :long-description
   #.(read-file-string
      (subpathname *load-pathname* "README.md"))

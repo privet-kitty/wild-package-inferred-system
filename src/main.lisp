@@ -153,7 +153,8 @@ match a given wildcard."
               (equal second-type "nosystem"))))))
 
 (defun extract-non-wild-prefix (system)
-  "foo/bar/* to foo/bar; foo/**/baz/*/* to foo."
+  "E.g. returns 'foo/bar' for 'foo/bar/*' and 'foo' for
+  'foo/**/baz/*/*'."
   (check-type system string)
   (assert (not (zerop (length system))))
   (assert (not (char= #\* (char system 0))))
