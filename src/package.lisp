@@ -1,5 +1,5 @@
 (uiop:define-package :wild-package-inferred-system
-  (:nicknames :wpis)
+  (:nicknames :wpis :winfer)
   (:use :cl :uiop :asdf)
   (:import-from :asdf
                 #:basic-load-op
@@ -11,3 +11,5 @@
   (:export #:wild-package-inferred-system
            #:empty-wild-system
            #:reduce-all-wild-packages))
+
+(in-package :wild-package-inferred-system)

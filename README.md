@@ -13,7 +13,7 @@ You need to specify the `:defsystem-depends-on` and `:class` options to use `wil
 ;; foo-wild/foo-wild.asd
 (defsystem "foo-wild"
   :defsystem-depends-on ("wild-package-inferred-system")
-  :class "wpis:wild-package-inferred-system"
+  :class "winfer:wild-package-inferred-system"
   :depends-on ("foo-wild/baz/*"))
 ```
 

@@ -1,7 +1,7 @@
 ;; -*- mode: lisp -*-
 
 #-ASDF3.3
-(error "wild-package-inferred-system requires ASDF 3.3.1 or later. The version of your ASDF is ~A."
+(error "wild-package-inferred-system requires ASDF 3.3 or later. The version of your ASDF is ~A."
        (asdf:asdf-version))
 
 (defsystem "wild-package-inferred-system"
