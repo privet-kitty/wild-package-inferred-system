@@ -66,7 +66,7 @@ No. See [the issue](https://github.com/privet-kitty/wild-package-inferred-system
 ### How can I nickname a wild package?
 Of course you may manually give arbitrary nicknames to a wild package by e.g. `(uiop:ensure-package :foo/bar/* :nicknames '(:foo/bar))`.
 
-`wild-package-inferred-system` provides an option to nickname a wild package automatically. If `:add-non-wild-nickname t` is specified in `defsystem` form, a nickname is given to each wild package, which is the prefix containing no wildcards: e.g. the nickname of `:foo/bar/**/baz/*` is `:foo/bar`. Therefore you cannot make two packages with a common prefix (e.g. `:foo/bar/**/*` and `:foo/bar/*`) if you enable this option.
+In addition, `wild-package-inferred-system` provides an option to nickname a wild package automatically. If `:add-non-wild-nickname t` is specified in `defsystem` form, a nickname is given to each wild package, which is the prefix containing no wildcards: e.g. the nickname of `:foo/bar/**/baz/*` is `:foo/bar`. Therefore you cannot make two packages with a common prefix (e.g. `:foo/bar/**/*` and `:foo/bar/*`) if you enable this option.
 
 ## Copyright
 Copyright (c) 2018 Hugo I.
