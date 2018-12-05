@@ -5,14 +5,14 @@
        (asdf:asdf-version))
 
 (defsystem "wild-package-inferred-system"
-  :version "0.1.3"
+  :version "0.2.0"
   :author "Hugo I."
   :license "MIT"
   :components ((:module "src"
                 :components ((:file "package")
                              (:file "internal-utilities")
                              (:file "main"))))
-  :description "Introduces wildcards `*' and `**' into package-inferred-system"
+  :description "Introduces the wildcards `*' and `**' into package-inferred-system"
   :long-description
   #.(read-file-string
      (subpathname *load-pathname* "README.md"))
