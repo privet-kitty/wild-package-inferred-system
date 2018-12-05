@@ -1,5 +1,5 @@
 ;;;
-;;; This file largely consists of common code with
+;;; This file contains common code, comments, and docstrings with
 ;;; asdf/package-inferred-system.lisp
 ;;; 
 
@@ -7,18 +7,23 @@
 
 (defclass wild-package-inferred-system (package-inferred-system)
   ((package-option :initform '((:use :cl)) :initarg :default-package-option :reader default-package-option)
-   (non-wild-nickname :initform nil :initarg :add-non-wild-nickname :reader non-wild-nickname-p))
+   (add-non-wild-nickname :initform nil :initarg :add-non-wild-nickname :reader non-wild-nickname-p))
   (:documentation "Is almost the same as ASDF:PACKAGE-INFERRED-SYSTEM,
   except it can interpret star `*' and globstar `**' in package names.
 
 Package options given to :DEFAULT-PACKAGE-OPTION are merged into
-auto-generated wild package forms. The default is ((:USE :CL)).
+auto-generated wild package forms. The default is ((:USE :CL)). You
+can specify any options UIOP:DEFINE-PACKAGE accepts.
 
 If :ADD-NON-WILD-NICKNAME is true, a nickname is given to each wild
 package, which is the prefix containing no wildcards: e.g. the
 nickname of :foo/bar/**/baz/* is :foo/bar. Therefore you cannot make
 packages with a common prefix (e.g. :foo/bar/**/baz* and :foo/bar/*)
 if you enable this option."))
+
+;;
+;; BEGIN common code with asdf/package-inferred-system.lisp
+;;
 
 ;; Is a given form recognizable as a defpackage form?
 (defun defpackage-form-p (form)
@@ -49,9 +54,15 @@ otherwise return a default system name computed from PACKAGE-NAME."
   (or (gethash package-name *package-inferred-systems*)
       (string-downcase package-name)))
 
-;; Given package-inferred-system object, check whether its specification matches
-;; the provided parameters
+;;
+;; END common code with asdf/package-inferred-system.lisp
+;;
+
 (defun same-wild-package-inferred-system-p (system name directory subpath around-compile dependencies)
+  "Is almost the same as
+ASDF/PACKAGE-INFERRED-SYSTEM::SAME-PACKAGE-INFERRED-SYSTEM-P that
+checks whether the system equals to the one specified by the other
+parameters"
   (and (eq (type-of system) 'wild-package-inferred-system)
        (equal (component-name system) name)
        (pathname-equal directory (component-pathname system))
@@ -86,14 +97,15 @@ otherwise return a default system name computed from PACKAGE-NAME."
             ".lisp")))
 
 (defun calc-wild-package-directory-pathname (toplevel-system-directory)
-  "CL source files for wild systems are put under
-ASDF:*USER-CACHE* (in the default configuration of
-ASDF-OUTPUT-TRANSLATIONS)."
+  "CL source files for wild systems are put under the translated
+directory by ASDF-OUTPUT-TRANSLATIONS, which will be ASDF:*USER-CACHE*
+in the default configuration."
   (merge-pathnames* (strcat "__WILD_SYSTEM__/")
                     (apply-output-translations toplevel-system-directory)))
 
 (defun gen-reexporting-form (system dependencies &key nickname (default-option '((:use :cl))))
-  "Generates the UIOP:DEFINE-PACKAGE form for reexporting."
+  "Generates the UIOP:DEFINE-PACKAGE form for use-reexporting matched
+packages."
   (let ((primary (primary-system-name system))
         (option (remove :use-reexport default-option :key #'car)) ; except use-reexport
         (use-reexported-packages (cdr (find :use-reexport default-option :key #'car))))
@@ -119,7 +131,7 @@ ASDF-OUTPUT-TRANSLATIONS)."
                      (error-base-pathname c)))))
 
 (defun pathname-to-package-name (pathname primary-system)
-  "Derives the package name of CL-SOURCE-FILE at PATHNAME
+  "Derives the package name of the source file at PATHNAME
 w.r.t. PRIMARY-SYSTEM."
   (let* ((primary-pathname (component-pathname primary-system))
          (relative
@@ -139,9 +151,9 @@ w.r.t. PRIMARY-SYSTEM."
                                             :type nil)))))
 
 (defun excluded-source-pathname-p (pathname)
-  "wild-package-inferred-system ignores the file names beginning with
+  "WILD-PACKAGE-INFERRED-SYSTEM ignores the file names beginning with
 dot `.' and file types .nosystem.lisp and .script.lisp even if they
-match a given wildcard."
+match a given wild-pathname."
   (let ((name (pathname-name pathname)))
     (or (not (stringp name))
         (char= #\. (char name 0))
@@ -161,8 +173,8 @@ match a given wildcard."
           do (loop-finish)
         finally (return (subseq system 0 (- pos 1)))))
 
-;; sysdef search function to push into *system-definition-search-functions*
 (defun sysdef-wild-package-inferred-system-search (system)
+  "Will be pushed into ASDF:*SYSTEM-DEFINITION-SEARCH-FUNCTIONS*."
   (let ((primary (primary-system-name system)))
     (unless (equal primary system)
       (let ((top (find-system primary nil)))
@@ -170,7 +182,9 @@ match a given wildcard."
           (if-let (dir (component-pathname top))
             (let* ((sub (subseq system (1+ (length primary))))
                    (path (subpathname** dir sub :type "lisp")))
-              ;; Leaves it to package-inferred-system if it contains no wildcard.
+              ;; Leaves it to package-inferred-system if it contains
+              ;; no wildcard (though this test-form may be always
+              ;; true).
               (when (wild-pathname-p path)
                 (let ((files (delete-if #'excluded-source-pathname-p (directory* path))))
                   (unless files
@@ -199,15 +213,14 @@ match a given wildcard."
                                        (equalp new-form (read-file-form translated-path)))
                             (with-output-file (out translated-path :if-exists :supersede)
                               (writeln new-form :stream out)))
-                          (let ((new-system (eval
-                                             `(defsystem ,system
-                                                :class wild-package-inferred-system
-                                                :source-file ,(system-source-file top)
-                                                :pathname ,dir
-                                                :depends-on ,dependencies
-                                                :around-compile ,around-compile
-                                                :components ((cl-source-file "lisp" :pathname ,translated-path))))))
-                            new-system)))))))))))))
+                          (eval
+                           `(defsystem ,system
+                              :class wild-package-inferred-system
+                              :source-file ,(system-source-file top)
+                              :pathname ,dir
+                              :depends-on ,dependencies
+                              :around-compile ,around-compile
+                              :components ((cl-source-file "lisp" :pathname ,translated-path))))))))))))))))
 
 (pushnew 'sysdef-wild-package-inferred-system-search *system-definition-search-functions*)
 
@@ -219,7 +232,9 @@ PRIMARY-NAME. (experimental)"
   (let ((primary-name (standard-case-symbol-name primary-name)))
     (dolist (p (list-all-packages))
       (let ((name (package-name p)))
-        (when (and (equal primary-name (primary-system-name name)) ; FIXME: primary-system-name will be inappropriate because NAME is a package name
+        ;; FIXME: primary-system-name will be inappropriate because
+        ;; NAME is a package name
+        (when (and (equal primary-name (primary-system-name name))
                    (wild-pathname-p (parse-unix-namestring** name)))
           (reduce-package p)
           (when delete
