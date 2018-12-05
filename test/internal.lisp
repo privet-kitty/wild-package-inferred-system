@@ -7,23 +7,23 @@
                 (:nicknames :foo)
                 (:use :cl :uiop)
                 (:use-reexport :cl-ppcre :foo/bar :foo/bar/baz))
-              (wpis::gen-reexporting-form "foo/**/*"
-                                          '("foo/bar" "foo/bar/baz")
-                                          :default-option '((:use :cl :uiop)
-                                                            (:use-reexport :cl-ppcre))
-                                          :nickname :foo)))
+              (winfer::gen-reexporting-form "foo/**/*"
+                                            '("foo/bar" "foo/bar/baz")
+                                            :default-option '((:use :cl :uiop)
+                                                              (:use-reexport :cl-ppcre))
+                                            :nickname :foo)))
   (is (equalp '(uiop:define-package :foo/*
                 (:use :cl)
                 (:use-reexport))
-              (wpis::gen-reexporting-form "foo/*" nil))))
+              (winfer::gen-reexporting-form "foo/*" nil))))
 
 (test excluded-source-pathname-p
-  (is (wpis::excluded-source-pathname-p #P"foo/bar.script.lisp"))
-  (is (wpis::excluded-source-pathname-p #P"/foo/bar/baz.nosystem.lisp"))
-  (is (wpis::excluded-source-pathname-p #P"/foo/bar/.dot.lisp"))
-  (is (wpis::excluded-source-pathname-p #P"/foo/bar/.lisp"))
-  (is (not (wpis::excluded-source-pathname-p #P"foo/bar.lisp"))))
+  (is (winfer::excluded-source-pathname-p #P"foo/bar.script.lisp"))
+  (is (winfer::excluded-source-pathname-p #P"/foo/bar/baz.nosystem.lisp"))
+  (is (winfer::excluded-source-pathname-p #P"/foo/bar/.dot.lisp"))
+  (is (winfer::excluded-source-pathname-p #P"/foo/bar/.lisp"))
+  (is (not (winfer::excluded-source-pathname-p #P"foo/.bar/baz.lisp"))))
 
 (test gen-wild-package-filename
   (is (equal "foo_SL_WILD-INFERIORS_SL_bar_SL_WILD.lisp"
-             (wpis::gen-wild-package-filename "foo/**/bar/*"))))
+             (winfer::gen-wild-package-filename "foo/**/bar/*"))))

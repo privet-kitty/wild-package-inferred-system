@@ -5,8 +5,9 @@
 (in-package :wild-package-inferred-system)
 
 (defun split-unix-namestring-directory-components** (unix-namestring &key ensure-directory dot-dot)
-  "Is almost same as UIOP:SPLIT-UNIX-NAMESTRING-DIRECTORY-COMPONENTS
-but interprets star `*' and globstar `**'."
+  "Is almost the same as
+UIOP:SPLIT-UNIX-NAMESTRING-DIRECTORY-COMPONENTS but interprets star
+`*' and globstar `**'."
   (check-type unix-namestring string)
   (check-type dot-dot (member nil :back :up))
   (if (and (not (find #\/ unix-namestring)) (not ensure-directory)
@@ -33,9 +34,9 @@ but interprets star `*' and globstar `**'."
             (t
              (values relative (butlast components) last-comp nil)))))))
 
-
 (defun split-name-type** (filename)
-  "Is almost same as UIOP:SPLIT-NAME-TYPE but interprets star `*'."
+  "Is almost the same as UIOP:SPLIT-NAME-TYPE but interprets star
+`*'."
   (check-type filename string)
   (assert (plusp (length filename)))
   (destructuring-bind (name &optional (type *unspecific-pathname-type*))
@@ -49,8 +50,8 @@ but interprets star `*' and globstar `**'."
         (values name type))))
 
 (defun parse-unix-namestring** (name &rest keys &key type defaults dot-dot ensure-directory &allow-other-keys)
-  "Is almost same as UIOP:PARSE-UNIX-NAMESTRING but interprets star
-`*' and globstar `**'."
+  "Is almost the same as UIOP:PARSE-UNIX-NAMESTRING but interprets
+star `*' and globstar `**'."
   (block nil
     (check-type type (or null string (eql :directory)))
     (when ensure-directory
@@ -79,8 +80,8 @@ but interprets star `*' and globstar `**'."
                (remove-plist-keys '(:type :dot-dot :defaults) keys))))))
 
 (defun subpathname** (pathname subpath &key type)
-  "Is almost same as UIOP:SUBPATHNAME but interprets star `*' and `**'
-globstar."
+  "Is almost the same as UIOP:SUBPATHNAME but interprets star `*' and
+`**' globstar."
   (or (and (pathnamep subpath) (absolute-pathname-p subpath))
       (merge-pathnames* (parse-unix-namestring** subpath :type type :want-relative t)
                         (pathname-directory-pathname pathname))))

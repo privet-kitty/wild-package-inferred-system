@@ -30,7 +30,7 @@
 
   (reset-collected-systems)
   (let ((asdf:*system-definition-search-functions*
-          (cons #'collect-system asdf:*system-definition-search-functions*)))
+          (cons 'collect-system asdf:*system-definition-search-functions*)))
     (finishes (asdf:load-system :foo-wild)))
   ;; Test if *SYSTEM-DEFINITION-SEARCH-FUNCTIONS* are not called twice
   ;; for a wild system during a session.
