@@ -5,9 +5,8 @@
 (in-package :wild-package-inferred-system)
 
 (defun split-unix-namestring-directory-components** (unix-namestring &key ensure-directory dot-dot)
-  "Is almost the same as
-UIOP:SPLIT-UNIX-NAMESTRING-DIRECTORY-COMPONENTS but interprets star
-`*' and globstar `**'."
+  "Is almost the same as UIOP:SPLIT-UNIX-NAMESTRING-DIRECTORY-COMPONENTS but
+interprets star `*' and globstar `**'."
   (check-type unix-namestring string)
   (check-type dot-dot (member nil :back :up))
   (if (and (not (find #\/ unix-namestring)) (not ensure-directory)
@@ -35,8 +34,7 @@ UIOP:SPLIT-UNIX-NAMESTRING-DIRECTORY-COMPONENTS but interprets star
              (values relative (butlast components) last-comp nil)))))))
 
 (defun split-name-type** (filename)
-  "Is almost the same as UIOP:SPLIT-NAME-TYPE but interprets star
-`*'."
+  "Is almost the same as UIOP:SPLIT-NAME-TYPE but interprets star `*'."
   (check-type filename string)
   (assert (plusp (length filename)))
   (destructuring-bind (name &optional (type *unspecific-pathname-type*))
@@ -50,8 +48,8 @@ UIOP:SPLIT-UNIX-NAMESTRING-DIRECTORY-COMPONENTS but interprets star
         (values name type))))
 
 (defun parse-unix-namestring** (name &rest keys &key type defaults dot-dot ensure-directory &allow-other-keys)
-  "Is almost the same as UIOP:PARSE-UNIX-NAMESTRING but interprets
-star `*' and globstar `**'."
+  "Is almost the same as UIOP:PARSE-UNIX-NAMESTRING but interprets star `*' and
+globstar `**'."
   (block nil
     (check-type type (or null string (eql :directory)))
     (when ensure-directory
@@ -80,16 +78,16 @@ star `*' and globstar `**'."
                (remove-plist-keys '(:type :dot-dot :defaults) keys))))))
 
 (defun subpathname** (pathname subpath &key type)
-  "Is almost the same as UIOP:SUBPATHNAME but interprets star `*' and
-`**' globstar."
+  "Is almost the same as UIOP:SUBPATHNAME but interprets star `*' and `**'
+globstar."
   (or (and (pathnamep subpath) (absolute-pathname-p subpath))
       (merge-pathnames* (parse-unix-namestring** subpath :type type :want-relative t)
                         (pathname-directory-pathname pathname))))
 
 (defun reduce-package (package-designator)
-  "Reduces the package from the graph of user-usee relationship: for
-example, (A B) using C using (D E F) is transformed to A using (D E F)
-and B using (D E F) if package C is reduced. "
+  "Reduces the package from the graph of user-usee relationship: for example, (A
+B) using C using (D E F) is transformed to A using (D E F) and B using (D E F)
+if package C is reduced. "
   (let ((using-list (package-used-by-list package-designator))
         (used-list (package-use-list package-designator)))
     (dolist (using using-list)
@@ -98,10 +96,10 @@ and B using (D E F) if package C is reduced. "
         (use-package used using)))))
 
 (defun make-keyword (string-designator &optional (force-case :standard))
-  (intern (funcall (etypecase force-case
-                     (null #'identity)
-                     ((eql :standard) #'standard-case-symbol-name)
-                     ((eql :upper) #'string-upcase)
-                     ((eql :lower) #'string-downcase))
+  (intern (funcall (ecase force-case
+                     ((nil) #'identity)
+                     (:standard #'standard-case-symbol-name)
+                     (:upper #'string-upcase)
+                     (:lower #'string-downcase))
                    string-designator)
           :keyword))

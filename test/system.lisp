@@ -48,6 +48,7 @@
                    :foo-wild/bar/deep/functions)
                  (package-use-list :foo-wild/bar/**/*)
                  :key #'find-package))
+  ;; FIXME: The example function HELLO is too complicated.
   (is (equal "Hello, world! 2pi equals 6."
              (let ((out (make-string-output-stream))
                    (*standard-input* (make-string-input-stream "t nil")))

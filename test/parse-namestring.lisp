@@ -1,8 +1,8 @@
 ;;
 ;; Portability test of (PARSE-NAMESTRING <WILD-PATHNAME>).
 ;;
-;; (Currently parse-namestring is not used in
-;; wild-package-inferred-system. It is for future.)
+;; (Currently parse-namestring is not used in wild-package-inferred-system. This
+;; test is for future development.)
 ;;
 
 (in-package :wild-package-inferred-system/test)
