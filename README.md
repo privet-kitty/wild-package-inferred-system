@@ -45,6 +45,8 @@ You _can_ use any other combinations of wildcards, e.g. `foo/*/bar` or `foo/**/*
 - ECL
 
 ## Installation
+`wild-package-inferred-system` will be automatically fetched and loaded via quicklisp. If you want to install it from this repository, just run:
+
 ```
 $ cd ~/common-lisp/ # , ~/quicklisp/local-projects/, ~/.roswell/local-projects/ etc.
 $ git clone https://github.com/privet-kitty/wild-package-inferred-system.git
