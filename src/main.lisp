@@ -115,6 +115,7 @@ and file types .nosystem.lisp and .script.lisp even if they match a given
 wild-pathname."
   (let ((name (pathname-name pathname)))
     (or (not (stringp name))
+        (zerop (length name))
         (char= #\. (char name 0))
         (let ((second-type (nth-value 1 (split-name-type name))))
           (or (equal second-type "script")
