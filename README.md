@@ -1,6 +1,6 @@
 # wild-package-inferred-system
 
-[![Build Status](https://api.travis-ci.org/privet-kitty/wild-package-inferred-system.svg?branch=master)](https://travis-ci.org/privet-kitty/wild-package-inferred-system/) **This library is still in a alpha stage.**
+[![Build Status](https://github.com/privet-kitty/wild-package-inferred-system/workflows/CI/badge.svg)](https://github.com/privet-kitty/wild-package-inferred-system/actions) **This library is still in a alpha stage.**
 
 `wild-package-inferred-system` is an extension of ASDF `package-inferred-system` that interprets star `*` and globstar `**` in package (or system) names.
 
@@ -41,8 +41,6 @@ You _can_ use any other combinations of wildcards, e.g. `foo/*/bar` or `foo/**/*
 - Clozure CL
 - Allegro CL
 - ABCL
-- CLISP
-- ECL
 
 ## Installation
 `wild-package-inferred-system` will be automatically fetched and loaded via quicklisp. If you want to install it from this repository, just run:
